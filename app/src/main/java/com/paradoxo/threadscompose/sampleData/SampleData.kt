@@ -1,0 +1,82 @@
+package com.paradoxo.threadscompose.sampleData
+
+import com.paradoxo.threadscompose.R
+import com.paradoxo.threadscompose.getCurrentTime
+import com.paradoxo.threadscompose.model.Post
+import com.paradoxo.threadscompose.model.UserAccount
+import kotlin.random.Random
+
+class SampleData() {
+    val posts = mutableListOf<Post>()
+    val userAccounts = mutableListOf<UserAccount>()
+
+
+   private val descriptions = listOf(
+        "Viver o momento é a verdadeira essência da vida!",
+        "Tirando um tempo para admirar as pequenas coisas da vida.",
+        "A melhor parte da vida são as pessoas que conhecemos ao longo do caminho.",
+        "A natureza sempre veste as cores do espírito.",
+        "Acredite em si mesmo e tudo é possível.",
+        "Sonhe grande e ouse falhar.",
+        "Desfrutando de alguns dos meus momentos favoritos.",
+        "Faça o que você ama, ame o que você faz.",
+        "É sempre melhor quando estamos juntos.",
+        "Inspire-se, mas seja você mesmo!"
+    )
+
+  private  val bios = listOf(
+        "Apaixonado por viagens e fotografia.",
+        "Viciado em café e aventuras.",
+        "Admirador da beleza da natureza.",
+        "Colecionador de momentos, não de coisas.",
+        "Um sonhador que se recusa a acordar.",
+        "Vivendo um dia de cada vez.",
+        "Amante de todas as coisas belas e extraordinárias.",
+        "Em busca de inspiração e felicidade.",
+        "Buscando a magia em cada dia.",
+        "Vivendo a vida ao máximo!"
+    )
+
+  private  val profilePis = listOf(
+        R.drawable.profile_pic_emoji_1,
+        R.drawable.profile_pic_emoji_2,
+        R.drawable.profile_pic_emoji_3,
+        R.drawable.profile_pic_emoji_4,
+    )
+
+    init {
+
+        for (i in 1..10) {
+            val userAccount = UserAccount(
+                id = i.toLong(),
+                name = "Nome $i",
+                userName = "usuario$i",
+                bio = bios[i - 1],
+                imageProfileUrl = profilePis.random(),
+                posts = listOf(),
+                follows = listOf(),
+                followers = listOf()
+            )
+            userAccounts.add(userAccount)
+
+            val post = Post(
+                id = i,
+                userAccount = userAccount,
+                description = descriptions[i - 1],
+                date = getCurrentTime(),
+                medias = if (Random.nextBoolean()) profilePis.shuffled() else listOf(),
+                likes = listOf(),
+                comments = listOf()
+            )
+            posts.add(post)
+        }
+
+        // Atualizar a lista de postagens de cada conta de usuário
+        for (i in 1..10) {
+            userAccounts[i - 1] =
+                userAccounts[i - 1].copy(posts = posts.filter { it.userAccount.id == i.toLong() }
+                    .map { it.id.toLong() })
+        }
+
+    }
+}
