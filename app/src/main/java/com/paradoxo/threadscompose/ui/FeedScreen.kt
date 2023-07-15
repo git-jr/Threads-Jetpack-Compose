@@ -35,7 +35,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.paradoxo.threadscompose.R
 import com.paradoxo.threadscompose.formatTimeElapsed
 import com.paradoxo.threadscompose.getCurrentTime
 import com.paradoxo.threadscompose.model.Post
@@ -46,7 +45,6 @@ import com.paradoxo.threadscompose.sampleData.SampleData
 fun FeedScreen(modifier: Modifier = Modifier) {
 
     val postLists = SampleData().posts
-
 
     LazyColumn(
         modifier = modifier
@@ -59,7 +57,7 @@ fun FeedScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun PostItem(post : Post) {
+private fun PostItem(post: Post) {
     val dividerColor = Color.Gray.copy(alpha = 0.2f)
 
     Row(
@@ -183,8 +181,6 @@ private fun PostItem(post : Post) {
                     contentDescription = "share"
                 )
             }
-
-            // Like, Comment, Share
         }
     }
 
@@ -198,5 +194,5 @@ private fun PostItem(post : Post) {
 @Preview(showBackground = true)
 @Composable
 private fun PostItemPreiew() {
-    PostItem(Post())
+    PostItem(SampleData().posts.first())
 }

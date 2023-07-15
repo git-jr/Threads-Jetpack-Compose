@@ -41,12 +41,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val before = getCurrentTime() - (60*60*23)
+        val before = getCurrentTime() - (60 * 60 * 23)
         val after = getCurrentTime()
         Log.i("MainActivity", "23 Horas atrás: ${formatTimeElapsed(before, after)}")
-        Log.i("MainActivity", "3 Dias atrás: ${formatTimeElapsed(before-(60*60*23*3), after)}")
-        Log.i("MainActivity", "2 Semanas: ${formatTimeElapsed(before-(60*60*23*16), after)}")
-        Log.i("MainActivity", "3 Meses: ${formatTimeElapsed(before-(60*60*23*100), after)}")
+        Log.i(
+            "MainActivity",
+            "3 Dias atrás: ${formatTimeElapsed(before - (60 * 60 * 23 * 3), after)}"
+        )
+        Log.i(
+            "MainActivity",
+            "2 Semanas: ${formatTimeElapsed(before - (60 * 60 * 23 * 16), after)}"
+        )
+        Log.i("MainActivity", "3 Meses: ${formatTimeElapsed(before - (60 * 60 * 23 * 100), after)}")
 
         setContent {
             ThreadsComposeTheme {
@@ -65,7 +71,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun HomeNavigation() {
 
-    var selectedItem by remember { mutableStateOf(0) }
+    var selectedItem by remember { mutableStateOf(2) }
     val items = listOf("Feed", "Search", "Post", "Notifications", "Profile")
     val icons = listOf(
         Icons.Default.Home,
@@ -100,7 +106,39 @@ fun HomeNavigation() {
             verticalArrangement = Arrangement.Center
         ) {
             when (selectedItem) {
-                0 -> FeedScreen()
+                0 -> {
+                    FeedScreen()
+//                    val altura = remember {
+//                        mutableStateOf(500.dp)
+//                    }
+//
+//                    val backgroundColor = remember {
+//                        mutableStateOf(Color.Blue)
+//                    }
+//
+//                    LaunchedEffect(Unit) {
+//                        repeat(10) {
+//                            delay(1000)
+//                            if (backgroundColor.value == Color.Blue) {
+//                                backgroundColor.value = Color.Green
+//                                 altura.value = 500.dp
+//                            } else {
+//                                backgroundColor.value = Color.Blue
+//                                  altura.value = 1920.dp
+//                            }
+//                        }
+//                    }
+//                    Box(
+//                        modifier = Modifier
+//                            .size(1080.dp, altura.value)
+//                            .background(backgroundColor.value)
+//                            .animateContentSize()
+//                    ) {
+//                        FeedScreen()
+//                    }
+
+                }
+
                 1 -> SearchScreen()
                 2 -> PostScreen()
                 3 -> NotificationsScreen()
@@ -129,7 +167,7 @@ fun formatTimeElapsed(start: Long, end: Long): String {
         elapsedSeconds < secondsInDay -> "${elapsedSeconds / secondsInHour} h"
         elapsedSeconds < secondsInWeek -> "${elapsedSeconds / secondsInDay} d"
         elapsedSeconds < secondsInMonth -> "${elapsedSeconds / secondsInWeek} sem"
-       elapsedSeconds < secondsInMonth * 12 -> "${elapsedSeconds / secondsInMonth} m"
+        elapsedSeconds < secondsInMonth * 12 -> "${elapsedSeconds / secondsInMonth} m"
         else -> "${elapsedSeconds / (secondsInMonth * 12)} a"
     }
 }

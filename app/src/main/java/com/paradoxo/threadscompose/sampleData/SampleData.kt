@@ -6,12 +6,11 @@ import com.paradoxo.threadscompose.model.Post
 import com.paradoxo.threadscompose.model.UserAccount
 import kotlin.random.Random
 
-class SampleData() {
+class SampleData {
     val posts = mutableListOf<Post>()
     val userAccounts = mutableListOf<UserAccount>()
 
-
-   private val descriptions = listOf(
+    private val descriptions = listOf(
         "Viver o momento é a verdadeira essência da vida!",
         "Tirando um tempo para admirar as pequenas coisas da vida.",
         "A melhor parte da vida são as pessoas que conhecemos ao longo do caminho.",
@@ -24,7 +23,7 @@ class SampleData() {
         "Inspire-se, mas seja você mesmo!"
     )
 
-  private  val bios = listOf(
+    private val bios = listOf(
         "Apaixonado por viagens e fotografia.",
         "Viciado em café e aventuras.",
         "Admirador da beleza da natureza.",
@@ -37,7 +36,7 @@ class SampleData() {
         "Vivendo a vida ao máximo!"
     )
 
-  private  val profilePis = listOf(
+    private val imagens = listOf(
         R.drawable.profile_pic_emoji_1,
         R.drawable.profile_pic_emoji_2,
         R.drawable.profile_pic_emoji_3,
@@ -45,6 +44,10 @@ class SampleData() {
     )
 
     init {
+        val randomNumbers = mutableListOf<Long>()
+        repeat(1000) {
+            randomNumbers.add(it.toLong())
+        }
 
         for (i in 1..10) {
             val userAccount = UserAccount(
@@ -52,10 +55,10 @@ class SampleData() {
                 name = "Nome $i",
                 userName = "usuario$i",
                 bio = bios[i - 1],
-                imageProfileUrl = profilePis.random(),
-                posts = listOf(),
-                follows = listOf(),
-                followers = listOf()
+                imageProfileUrl = imagens.random(),
+                posts = randomNumbers.subList(0, Random.nextInt(1, 1000)),
+                follows = randomNumbers.subList(0, Random.nextInt(1, 1000)),
+                followers = randomNumbers.subList(0, Random.nextInt(1, 1000)),
             )
             userAccounts.add(userAccount)
 
@@ -64,14 +67,13 @@ class SampleData() {
                 userAccount = userAccount,
                 description = descriptions[i - 1],
                 date = getCurrentTime(),
-                medias = if (Random.nextBoolean()) profilePis.shuffled() else listOf(),
+                medias = if (Random.nextBoolean()) imagens.shuffled() else listOf(),
                 likes = listOf(),
                 comments = listOf()
             )
             posts.add(post)
         }
 
-        // Atualizar a lista de postagens de cada conta de usuário
         for (i in 1..10) {
             userAccounts[i - 1] =
                 userAccounts[i - 1].copy(posts = posts.filter { it.userAccount.id == i.toLong() }

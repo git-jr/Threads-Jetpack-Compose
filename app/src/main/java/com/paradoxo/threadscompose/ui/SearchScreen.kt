@@ -34,32 +34,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.paradoxo.threadscompose.R
+import com.paradoxo.threadscompose.model.UserAccount
+import com.paradoxo.threadscompose.sampleData.SampleData
 
 
 @Composable
 fun SearchScreen(modifier: Modifier = Modifier) {
 
-    val accountLists = mutableListOf<String>()
-
-    // write a for loop to create a list of accounts
-    for (i in 1..21) {
-        accountLists.add("Account $i")
-    }
-
+    val accountLists = SampleData().userAccounts
 
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
     ) {
         items(accountLists) { account ->
-            AccountItem()
+            AccountItem(account)
         }
     }
 }
 
-
 @Composable
-private fun AccountItem() {
+private fun AccountItem(account: UserAccount) {
     val dividerColor = Color.Gray.copy(alpha = 0.2f)
 
     Row(
@@ -73,7 +68,7 @@ private fun AccountItem() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
-                painter = painterResource(id = R.drawable.profile_pic_emoji_2),
+                painter = painterResource(id = account.imageProfileUrl),
                 contentDescription = "avatar",
                 modifier = Modifier
                     .padding(horizontal = 10.dp)
@@ -88,12 +83,12 @@ private fun AccountItem() {
         ) {
 
             Text(
-                text = "Shellstrop69",
+                text = account.userName,
                 fontWeight = FontWeight.Bold,
             )
 
             Text(
-                text = "Eleonor Shellstrop",
+                text = account.name,
                 color = Color.Gray
             )
 
@@ -136,7 +131,7 @@ private fun AccountItem() {
                 }
 
                 Text(
-                    text = "4.243",
+                    text = account.followers.size.toString(),
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
@@ -203,9 +198,10 @@ private fun AccountItem() {
     )
 }
 
-
 @Preview(showBackground = true)
 @Composable
 private fun AccountItemPreiew() {
-    AccountItem()
+    AccountItem(
+        SampleData().userAccounts.first()
+    )
 }
