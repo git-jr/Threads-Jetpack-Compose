@@ -106,39 +106,7 @@ fun HomeNavigation() {
             verticalArrangement = Arrangement.Center
         ) {
             when (selectedItem) {
-                0 -> {
-                    FeedScreen()
-//                    val altura = remember {
-//                        mutableStateOf(500.dp)
-//                    }
-//
-//                    val backgroundColor = remember {
-//                        mutableStateOf(Color.Blue)
-//                    }
-//
-//                    LaunchedEffect(Unit) {
-//                        repeat(10) {
-//                            delay(1000)
-//                            if (backgroundColor.value == Color.Blue) {
-//                                backgroundColor.value = Color.Green
-//                                 altura.value = 500.dp
-//                            } else {
-//                                backgroundColor.value = Color.Blue
-//                                  altura.value = 1920.dp
-//                            }
-//                        }
-//                    }
-//                    Box(
-//                        modifier = Modifier
-//                            .size(1080.dp, altura.value)
-//                            .background(backgroundColor.value)
-//                            .animateContentSize()
-//                    ) {
-//                        FeedScreen()
-//                    }
-
-                }
-
+                0 -> FeedScreen()
                 1 -> SearchScreen()
                 2 -> PostScreen()
                 3 -> NotificationsScreen()

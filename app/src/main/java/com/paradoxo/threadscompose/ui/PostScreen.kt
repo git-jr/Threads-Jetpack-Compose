@@ -2,6 +2,7 @@ package com.paradoxo.threadscompose.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -28,15 +29,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
@@ -46,33 +51,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.paradoxo.threadscompose.R
-import com.paradoxo.threadscompose.model.Post
+import com.paradoxo.threadscompose.model.UserAccount
 import com.paradoxo.threadscompose.sampleData.SampleData
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PostScreen(modifier: Modifier = Modifier) {
+    val currentUser = SampleData().userAccounts[0]
+
     Scaffold(
         modifier = modifier,
         topBar = {
-            TopAppBar(
-                navigationIcon = {
-                    Row {
-                        IconButton(onClick = { /*TODO*/ }) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Close"
-                            )
-                        }
-                    }
-                },
-                title = {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Nova thread",
-                        fontWeight = FontWeight.Bold
-                    )
-                })
+            PostScreenAppBar()
         }
     ) { paddingValues ->
         Column(
@@ -81,8 +70,22 @@ fun PostScreen(modifier: Modifier = Modifier) {
         ) {
             Divider(Modifier.fillMaxWidth(), color = Color.Gray.copy(alpha = 0.2f))
 
-            val posts by remember { mutableStateOf(mutableListOf<Post>()) }
-            posts.addAll(SampleData().posts.subList(0, 1))
+            val posts = mutableListOf(
+                PostScreenState(
+                    currentUser, "", "",
+                    isFirstPost = true
+                )
+            ).toMutableStateList()
+
+            var canAddNewPost by remember {
+                mutableStateOf(false)
+            }
+
+            LaunchedEffect(posts) {
+                if (posts.size > 1) {
+                    canAddNewPost = true
+                }
+            }
 
             LazyColumn(
                 modifier = Modifier
@@ -90,35 +93,66 @@ fun PostScreen(modifier: Modifier = Modifier) {
                     .weight(1f)
             ) {
                 items(posts) { post ->
-                    EditPostItem(post)
+                    EditPostItem(
+                        postState = post,
+                        onAddNew = {
+                            posts.add(
+                                PostScreenState(
+                                    userAccount = currentUser,
+                                    content = "",
+                                    date = ""
+                                )
+                            )
+                        },
+                        onRemove = {
+                            posts.remove(post)
+                        },
+                        onCanAddNew = {
+                            canAddNewPost = it
+                        }
+                    )
                 }
 
                 item {
                     Row(
                         Modifier
                             .fillMaxWidth()
-                            .alpha(0.5f)
-                            .clickable { },
+                            .alpha(
+                                if (canAddNewPost) 1f else 0.5f
+                            )
+                            .clickable(enabled = canAddNewPost) {
+                                if (canAddNewPost) {
+                                    posts.add(
+                                        PostScreenState(
+                                            userAccount = currentUser,
+                                            content = "",
+                                            date = ""
+                                        )
+                                    )
+                                }
+                            },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.profile_pic_emoji_1),
+                            painter = painterResource(id = currentUser.imageProfileUrl),
                             contentDescription = "avatar",
                             modifier = Modifier
                                 .padding(horizontal = 20.dp)
                                 .weight(1.5f)
-                                .clip(CircleShape)
+                                .clip(CircleShape),
                         )
 
                         Text(
                             "Adicionar à thread...",
                             color = Color.Black.copy(alpha = 0.5f),
-                            style = MaterialTheme.typography.labelLarge,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontSize = 16.sp
+                            ),
                             modifier = Modifier
                                 .clip(CircleShape)
-                                .weight(8.5f)
+                                .weight(8.5f),
 
-                        )
+                            )
                     }
                 }
             }
@@ -127,15 +161,23 @@ fun PostScreen(modifier: Modifier = Modifier) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PostScreenPreview() {
-    PostScreen()
-}
 
 @Composable
-private fun EditPostItem(post: Post) {
+private fun EditPostItem(
+    postState: PostScreenState,
+    onAddNew: () -> Unit = {},
+    onRemove: () -> Unit = {},
+    onCanAddNew: (Boolean) -> Unit = {}
+) {
+    val focusRequester = remember { FocusRequester() }
     val dividerColor = Color.Gray.copy(alpha = 0.2f)
+
+    var editTextState by remember {
+        mutableStateOf(postState.content)
+    }
+
+    val isFirstPost = postState.isFirstPost
+
     Row(
         Modifier
             .height(IntrinsicSize.Min)
@@ -150,9 +192,8 @@ private fun EditPostItem(post: Post) {
                 .weight(1.5f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Image(
-                painter = painterResource(id = post.userAccount.imageProfileUrl),
+                painter = painterResource(id = postState.userAccount.imageProfileUrl),
                 contentDescription = "avatar",
                 modifier = Modifier
                     .padding(horizontal = 12.dp)
@@ -172,21 +213,61 @@ private fun EditPostItem(post: Post) {
             Modifier
                 .weight(8.5f)
                 .padding(vertical = 8.dp)
-
         ) {
-            Text(
-                text = post.userAccount.name,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = postState.userAccount.name,
+                    fontWeight = FontWeight.Bold,
+                )
 
-            var editTextState by remember {
-                mutableStateOf("")
+                if (!isFirstPost) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = Color.Gray.copy(alpha = 0.6f),
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .clickable {
+                                onRemove()
+                            }
+                    )
+                }
             }
+
 
             BasicTextField(
                 value = editTextState,
-                onValueChange = { editTextState = it },
-                modifier = Modifier.weight(5F),
+                onValueChange = {
+                    if (it.endsWith("\n")) {
+                        if (isFirstPost && editTextState.isEmpty()) {
+                            editTextState = ""
+                            return@BasicTextField
+                        } else {
+                            if (!isFirstPost && it.endsWith("\n\n\n") && it.length == 3) {
+                                return@BasicTextField
+                            }
+                            if (it.endsWith("\n\n\n") && editTextState.isNotEmpty()) {
+                                editTextState = editTextState.dropLast(2)
+                                onAddNew()
+                                return@BasicTextField
+                            }
+                        }
+                    }
+                    if (!it.endsWith("\n\n\n")) {
+                        editTextState = it
+                    }
+
+                    if (isFirstPost) {
+                        onCanAddNew(it.isNotEmpty())
+                    }
+
+                },
+                modifier = Modifier
+                    .weight(5F)
+                    .focusRequester(focusRequester = focusRequester),
                 textStyle = TextStyle.Default.copy(
                     fontSize = 18.sp,
                     color = MaterialTheme.colorScheme.onBackground
@@ -197,23 +278,29 @@ private fun EditPostItem(post: Post) {
                             Text(
                                 "Iniciar uma thread...",
                                 color = Color.Black.copy(alpha = 0.5f),
-                                style = MaterialTheme.typography.labelLarge
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontSize = 16.sp
+                                )
                             )
                         }
                         innerValue()
                     }
                 },
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.surfaceVariant),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.surfaceVariant)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            LaunchedEffect(Unit) {
+                focusRequester.requestFocus()
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Box(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_attach_file),
-                    contentDescription = "like",
+                    contentDescription = "attach file",
                     tint = Color.Gray,
                     modifier = Modifier
                         .size(24.dp)
@@ -226,8 +313,52 @@ private fun EditPostItem(post: Post) {
     }
 }
 
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun PostScreenAppBar() {
+    TopAppBar(
+        navigationIcon = {
+            Row {
+                IconButton(onClick = { /*TODO*/ }) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close"
+                    )
+                }
+            }
+        },
+        title = {
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Nova thread",
+                fontWeight = FontWeight.Bold
+            )
+        })
+}
+
 @Preview(showBackground = true)
 @Composable
-fun EditPostItemPreiew() {
-    EditPostItem(SampleData().posts.first())
+fun PostScreenPreview() {
+    PostScreen()
 }
+
+@Preview(showBackground = true)
+@Composable
+fun EditPostItemPreview() {
+    EditPostItem(
+        postState = PostScreenState(
+            userAccount = SampleData().userAccounts[0],
+            content = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eget aliquam ultricies, nisl nisl aliquet nisl, eget aliquam nisl nisl eget nisl. Donec euismod, nisl eget aliquam ultricies, nisl nisl aliquet nisl, eget aliquam nisl nisl eget nisl. Donec euismod, nisl eget aliquam ultricies, nisl nisl aliquet nisl, eget aliquam nisl nisl eget nisl. Donec euismod, nisl eget aliquam ultricies, nisl nisl aliquet nisl, eget aliquam nisl nisl eget nisl. Donec euismod, nisl eget aliquam ultricies, nisl nisl aliquet nisl, eget aliquam nisl nisl eget nisl. Donec euismod, nisl eget aliquam ultricies, nisl nisl aliquet nisl, eget aliquam nisl nisl eget nisl. Donec euismod, nisl eget aliquam ultricies, nisl nisl aliquet nisl, eget aliquam nisl nisl eget nisl. ",
+            date = "10/10/2021"
+        )
+    )
+}
+
+
+internal data class PostScreenState(
+    val userAccount: UserAccount,
+    val content: String,
+    val date: String,
+    val isFirstPost: Boolean = false
+)
