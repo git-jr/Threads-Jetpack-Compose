@@ -2,11 +2,16 @@ package com.paradoxo.threadscompose.sampleData
 
 import com.paradoxo.threadscompose.R
 import com.paradoxo.threadscompose.getCurrentTime
+import com.paradoxo.threadscompose.model.Notification
+import com.paradoxo.threadscompose.model.NotificationType
 import com.paradoxo.threadscompose.model.Post
 import com.paradoxo.threadscompose.model.UserAccount
+import java.util.UUID
+
 import kotlin.random.Random
 
 class SampleData {
+    val notifications = mutableListOf<Notification>()
     val posts = mutableListOf<Post>()
     val userAccounts = mutableListOf<UserAccount>()
 
@@ -78,6 +83,22 @@ class SampleData {
             userAccounts[i - 1] =
                 userAccounts[i - 1].copy(posts = posts.filter { it.userAccount.id == i.toLong() }
                     .map { it.id.toLong() })
+        }
+
+        repeat(10) {
+            notifications.add(
+                Notification(
+                    id = UUID.randomUUID().toString(),
+                    title = "Titulo $it",
+                    description = "Descrição $it",
+                    extraContent = if (Random.nextBoolean()) "Conteúdo extra $it" else null,
+                    image = R.drawable.profile_pic_emoji_4,
+                    time = "1d",
+                    type = if (it in 2..4) NotificationType.values().sortedArray()[it] else
+                        NotificationType.values().sortedArray()[Random.nextInt(0, 5)],
+                    isFollowing = Random.nextBoolean(),
+                )
+            )
         }
 
     }

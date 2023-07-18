@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun HomeNavigation() {
 
-    var selectedItem by remember { mutableStateOf(2) }
+    var selectedItem by remember { mutableStateOf(3) }
     val items = listOf("Feed", "Search", "Post", "Notifications", "Profile")
     val icons = listOf(
         Icons.Default.Home,

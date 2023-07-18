@@ -200,7 +200,7 @@ private fun AccountItem(account: UserAccount) {
 
 @Preview(showBackground = true)
 @Composable
-private fun AccountItemPreiew() {
+private fun AccountItemPreview() {
     AccountItem(
         SampleData().userAccounts.first()
     )

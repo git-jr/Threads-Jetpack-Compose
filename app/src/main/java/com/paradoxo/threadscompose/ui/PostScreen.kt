@@ -58,6 +58,17 @@ import com.paradoxo.threadscompose.sampleData.SampleData
 fun PostScreen(modifier: Modifier = Modifier) {
     val currentUser = SampleData().userAccounts[0]
 
+    val posts = mutableListOf(
+        PostScreenState(
+            currentUser, "", "",
+            isFirstPost = true
+        )
+    ).toMutableStateList()
+
+    var canAddNewPost by remember {
+        mutableStateOf(false)
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -69,17 +80,6 @@ fun PostScreen(modifier: Modifier = Modifier) {
                 .padding(paddingValues = paddingValues)
         ) {
             Divider(Modifier.fillMaxWidth(), color = Color.Gray.copy(alpha = 0.2f))
-
-            val posts = mutableListOf(
-                PostScreenState(
-                    currentUser, "", "",
-                    isFirstPost = true
-                )
-            ).toMutableStateList()
-
-            var canAddNewPost by remember {
-                mutableStateOf(false)
-            }
 
             LaunchedEffect(posts) {
                 if (posts.size > 1) {
