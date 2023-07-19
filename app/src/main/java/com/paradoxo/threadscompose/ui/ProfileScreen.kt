@@ -92,7 +92,6 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                 Column(
                     Modifier
                         .fillMaxWidth()
-
                 ) {
                     Row(
                         Modifier
@@ -173,6 +172,7 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                                             shape = CircleShape
                                         )
                                         .clip(CircleShape)
+                                        .padding(2.dp)
                                 )
 
                                 Image(
@@ -187,6 +187,7 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                                             shape = CircleShape
                                         )
                                         .clip(CircleShape)
+                                        .padding(2.dp)
                                 )
                             }
 

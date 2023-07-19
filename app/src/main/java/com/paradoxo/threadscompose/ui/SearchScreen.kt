@@ -113,6 +113,7 @@ private fun AccountItem(account: UserAccount) {
                                 shape = CircleShape
                             )
                             .clip(CircleShape)
+                            .padding(2.dp)
                     )
 
                     Image(
@@ -127,6 +128,7 @@ private fun AccountItem(account: UserAccount) {
                                 shape = CircleShape
                             )
                             .clip(CircleShape)
+                            .padding(2.dp)
                     )
                 }
 

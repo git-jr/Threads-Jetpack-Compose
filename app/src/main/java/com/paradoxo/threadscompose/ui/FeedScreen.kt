@@ -25,13 +25,6 @@ fun FeedScreen(modifier: Modifier = Modifier) {
 }
 
 
-
-@Preview(showBackground = true)
-@Composable
-private fun PostItemPreiew() {
-    PostItem(SampleData().posts.first())
-}
-
 @Preview(showBackground = true)
 @Composable
 fun FeedScreenPreview() {

@@ -73,8 +73,8 @@ class SampleData {
                 description = descriptions[i - 1],
                 date = getCurrentTime(),
                 medias = if (Random.nextBoolean()) imagens.shuffled() else listOf(),
-                likes = listOf(),
-                comments = listOf()
+                likes = generateSampleLikes(),
+                comments = generateSampleComments()
             )
             posts.add(post)
         }
@@ -101,5 +101,35 @@ class SampleData {
             )
         }
 
+    }
+
+    private fun generateSampleLikes(): List<Long> {
+        if (Random.nextBoolean()) return emptyList()
+        val likes = mutableListOf<Long>()
+        repeat(Random.nextInt(0, 1000)) {
+            likes.add(it.toLong())
+        }
+        return likes
+    }
+
+    private fun generateSampleComments(): List<Post> {
+
+        if (Random.nextBoolean()) return emptyList()
+
+        val comments = mutableListOf<Post>()
+        repeat(Random.nextInt(0, 10)) {
+            comments.add(
+                Post(
+                    id = it,
+                    userAccount = userAccounts.random(),
+                    description = "Comentário $it",
+                    date = getCurrentTime(),
+                    medias = listOf(),
+                    likes = listOf(),
+                    comments = listOf()
+                )
+            )
+        }
+        return comments
     }
 }
