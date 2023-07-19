@@ -77,259 +77,243 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
             }
         },
     ) { paddingValues ->
-        Column(
-            Modifier
-                .fillMaxWidth()
+
+        val postLists = SampleData().posts
+        val repliesList = SampleData().posts.shuffled()
+
+        var tabState by remember { mutableStateOf(0) }
+        val titles = listOf("Threads", "Respostas")
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
                 .padding(paddingValues = paddingValues)
         ) {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            ) {
-                Column(modifier = Modifier.weight(0.8f)) {
-                    Text(
-                        text = "Junior Martins",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 32.sp
-                        ),
-                    )
+            item {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+
+                ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        Column(modifier = Modifier.weight(0.8f)) {
+                            Text(
+                                text = "Junior Martins",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 32.sp
+                                ),
+                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "jr.obom",
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+
+                                SuggestionChip(
+                                    onClick = { /*TODO*/ },
+                                    label = {
+                                        Text(
+                                            text = "threads.net",
+                                            fontSize = 12.sp,
+                                        )
+                                    },
+                                    shape = RoundedCornerShape(50),
+                                    colors = SuggestionChipDefaults.suggestionChipColors(
+                                        containerColor = Color.LightGray.copy(alpha = 0.3f),
+                                        labelColor = Color.Gray.copy(alpha = 0.6f)
+                                    ),
+                                    border = null,
+                                )
+                            }
+                        }
+
+                        Box(modifier = Modifier.weight(0.2f)) {
+
+                            Image(
+                                painter = painterResource(id = R.drawable.profile_pic_emoji_2),
+                                contentDescription = "Profile",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(CircleShape)
+                            )
+                        }
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .padding(vertical = 8.dp, horizontal = 16.dp),
                     ) {
                         Text(
-                            text = "jr.obom",
-                            style = MaterialTheme.typography.titleMedium
+                            text = "Dev Android, produtor de conteudo tech e um Paradoxo!",
+                            modifier = Modifier.padding(bottom = 8.dp),
+                            style = MaterialTheme.typography.bodyLarge
                         )
-                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
 
-                        SuggestionChip(
-                            onClick = { /*TODO*/ },
-                            label = {
-                                Text(
-                                    text = "threads.net",
-                                    fontSize = 12.sp,
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row {
+                                Image(
+                                    painter = painterResource(id = R.drawable.profile_pic_emoji_1),
+                                    contentDescription = "avatar",
+                                    modifier = Modifier
+                                        .size(22.dp)
+                                        .offset(x = (-2).dp)
+                                        .border(
+                                            width = 2.dp,
+                                            color = Color.White,
+                                            shape = CircleShape
+                                        )
+                                        .clip(CircleShape)
                                 )
-                            },
-                            shape = RoundedCornerShape(50),
-                            colors = SuggestionChipDefaults.suggestionChipColors(
-                                containerColor = Color.LightGray.copy(alpha = 0.3f),
-                                labelColor = Color.Gray.copy(alpha = 0.6f)
-                            ),
-                            border = null,
-                        )
-                    }
-                }
 
-                Box(modifier = Modifier.weight(0.2f)) {
-
-                    Image(
-                        painter = painterResource(id = R.drawable.profile_pic_emoji_2),
-                        contentDescription = "Profile",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(CircleShape)
-                    )
-                }
-            }
-
-            Column(
-                modifier = Modifier
-                    .padding(vertical = 8.dp, horizontal = 16.dp),
-            ) {
-                Text(
-                    text = "Dev Android, produtor de conteudo tech e um Paradoxo!",
-                    modifier = Modifier.padding(bottom = 8.dp),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-
-                Row(
-                    Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row {
-                        Image(
-                            painter = painterResource(id = R.drawable.profile_pic_emoji_1),
-                            contentDescription = "avatar",
-                            modifier = Modifier
-                                .size(22.dp)
-                                .offset(x = (-2).dp)
-                                .border(
-                                    width = 2.dp,
-                                    color = Color.White,
-                                    shape = CircleShape
+                                Image(
+                                    painter = painterResource(id = R.drawable.profile_pic_emoji_3),
+                                    contentDescription = "avatar",
+                                    modifier = Modifier
+                                        .size(22.dp)
+                                        .offset(x = (-10).dp)
+                                        .border(
+                                            width = 2.dp,
+                                            color = Color.White,
+                                            shape = CircleShape
+                                        )
+                                        .clip(CircleShape)
                                 )
-                                .clip(CircleShape)
-                        )
+                            }
 
-                        Image(
-                            painter = painterResource(id = R.drawable.profile_pic_emoji_3),
-                            contentDescription = "avatar",
-                            modifier = Modifier
-                                .size(22.dp)
-                                .offset(x = (-10).dp)
-                                .border(
-                                    width = 2.dp,
-                                    color = Color.White,
-                                    shape = CircleShape
-                                )
-                                .clip(CircleShape)
-                        )
-                    }
-
-                    Text(
-                        text = "42",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            color = Color.Gray.copy(alpha = 0.8f)
-                        )
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "Seguidores",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            color = Color.Gray.copy(alpha = 0.8f)
-                        )
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "• SemInscreveAí.com",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            color = Color.Gray.copy(alpha = 0.8f)
-                        )
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    SuggestionChip(
-                        onClick = { /*TODO*/ },
-                        label = {
                             Text(
-                                text = "Editar perfil",
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp),
-                                fontSize = 16.sp
+                                text = "42",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    color = Color.Gray.copy(alpha = 0.8f)
+                                )
                             )
-                        },
-                        colors = SuggestionChipDefaults.suggestionChipColors(
-                            containerColor = Color.Transparent,
-                        ),
-                        border = SuggestionChipDefaults.suggestionChipBorder(
-                            borderColor = Color.Black.copy(alpha = 0.15f)
-                        ),
-                        shape = RoundedCornerShape(30),
-                        modifier = Modifier
-                            .weight(0.5f)
-                            .align(Alignment.CenterVertically)
-                    )
-
-                    Spacer(modifier = Modifier.width(16.dp))
-                    SuggestionChip(
-                        onClick = { /*TODO*/ },
-                        label = {
+                            Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "Compartilhar perfil",
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp),
-                                fontSize = 16.sp
+                                text = "Seguidores",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    color = Color.Gray.copy(alpha = 0.8f)
+                                )
                             )
-                        },
-                        colors = SuggestionChipDefaults.suggestionChipColors(
-                            containerColor = Color.Transparent,
-                        ),
-                        border = SuggestionChipDefaults.suggestionChipBorder(
-                            borderColor = Color.Black.copy(alpha = 0.15f)
-                        ),
-                        shape = RoundedCornerShape(30),
-                        modifier = Modifier.weight(0.5f)
-                    )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "• SemInscreveAí.com",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    color = Color.Gray.copy(alpha = 0.8f)
+                                )
+                            )
+                        }
 
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            Modifier
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            SuggestionChip(
+                                onClick = { /*TODO*/ },
+                                label = {
+                                    Text(
+                                        text = "Editar perfil",
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp),
+                                        fontSize = 16.sp
+                                    )
+                                },
+                                colors = SuggestionChipDefaults.suggestionChipColors(
+                                    containerColor = Color.Transparent,
+                                ),
+                                border = SuggestionChipDefaults.suggestionChipBorder(
+                                    borderColor = Color.Black.copy(alpha = 0.15f)
+                                ),
+                                shape = RoundedCornerShape(30),
+                                modifier = Modifier
+                                    .weight(0.5f)
+                                    .align(Alignment.CenterVertically)
+                            )
+
+                            Spacer(modifier = Modifier.width(16.dp))
+                            SuggestionChip(
+                                onClick = { /*TODO*/ },
+                                label = {
+                                    Text(
+                                        text = "Compartilhar perfil",
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp),
+                                        fontSize = 16.sp
+                                    )
+                                },
+                                colors = SuggestionChipDefaults.suggestionChipColors(
+                                    containerColor = Color.Transparent,
+                                ),
+                                border = SuggestionChipDefaults.suggestionChipBorder(
+                                    borderColor = Color.Black.copy(alpha = 0.15f)
+                                ),
+                                shape = RoundedCornerShape(30),
+                                modifier = Modifier.weight(0.5f)
+                            )
+
+                        }
+                    }
+                }
+
+                Column {
+                    TabRow(
+                        selectedTabIndex = tabState,
+                        contentColor = Color.Black,
+                        containerColor = Color.Transparent,
+                        indicator = { tabPositions ->
+                            TabRowDefaults.Indicator(
+                                Modifier
+                                    .tabIndicatorOffset(tabPositions[tabState])
+                                    .height(2.dp),
+                                color = Color.Black
+                            )
+                        }
+                    ) {
+                        titles.forEachIndexed { index, title ->
+                            Tab(
+                                selected = tabState == index,
+                                onClick = { tabState = index },
+                                text = {
+                                    Text(
+                                        text = title,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (tabState == index) Color.Black else Color.Gray.copy(
+                                            alpha = 0.7f
+                                        )
+                                    )
+                                }
+                            )
+                        }
+                    }
                 }
             }
-            TabsContentType()
-        }
-    }
 
-}
-
-@Composable
-private fun TabsContentType() {
-    var state by remember { mutableStateOf(0) }
-    val titles = listOf("Threads", "Respostas")
-    Column {
-        TabRow(
-            selectedTabIndex = state,
-            contentColor = Color.Black,
-            containerColor = Color.Transparent,
-            indicator = { tabPositions ->
-                TabRowDefaults.Indicator(
-                    Modifier
-                        .tabIndicatorOffset(tabPositions[state])
-                        .height(2.dp),
-                    color = Color.Black
-                )
-            }
-        ) {
-            titles.forEachIndexed { index, title ->
-                Tab(
-                    selected = state == index,
-                    onClick = { state = index },
-                    text = {
-                        Text(
-                            text = title,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (state == index) Color.Black else Color.Gray.copy(
-                                alpha = 0.7f
-                            )
-                        )
-                    }
-                )
+            if (tabState == 0) {
+                items(postLists) { post ->
+                    PostItem(post)
+                }
+            } else {
+                items(repliesList) { reply ->
+                    PostItem(reply)
+                }
             }
         }
 
-        if (state == 0) {
-            ThreadsTab()
-        } else {
-            RepliesTab()
-        }
-    }
-}
-
-@Composable
-fun RepliesTab() {
-    val postLists = SampleData().posts
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        items(postLists) { post ->
-            PostItem(post)
-        }
-    }
-}
-
-@Composable
-fun ThreadsTab() {
-
-    val postLists = SampleData().posts.shuffled()
-
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        items(postLists) { post ->
-            PostItem(post)
-        }
     }
 }
 
