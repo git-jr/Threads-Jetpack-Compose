@@ -1,8 +1,8 @@
 package com.paradoxo.threadscompose
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,7 +21,9 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -41,26 +43,17 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val before = getCurrentTime() - (60 * 60 * 23)
-        val after = getCurrentTime()
-        Log.i("MainActivity", "23 Horas atrás: ${formatTimeElapsed(before, after)}")
-        Log.i(
-            "MainActivity",
-            "3 Dias atrás: ${formatTimeElapsed(before - (60 * 60 * 23 * 3), after)}"
-        )
-        Log.i(
-            "MainActivity",
-            "2 Semanas: ${formatTimeElapsed(before - (60 * 60 * 23 * 16), after)}"
-        )
-        Log.i("MainActivity", "3 Meses: ${formatTimeElapsed(before - (60 * 60 * 23 * 100), after)}")
-
         setContent {
             ThreadsComposeTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    HomeNavigation()
+                    HomeNavigation(
+                        onFinish = {
+                            finish()
+                        }
+                    )
                 }
             }
         }
@@ -69,9 +62,11 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun HomeNavigation() {
+fun HomeNavigation(
+    onFinish: () -> Unit = {}
+) {
     var hideNavigationBar by remember { mutableStateOf(false) }
-    var selectedItem by remember { mutableStateOf(2) }
+    var selectedItem by remember { mutableStateOf(0) }
     val items = listOf("Feed", "Search", "Post", "Notifications", "Profile")
     val icons = listOf(
         Icons.Default.Home,
@@ -80,6 +75,41 @@ fun HomeNavigation() {
         Icons.Default.Favorite,
         Icons.Default.Person
     )
+
+    val homeItem = 0
+    val postItem = 2
+
+    val navigationStack = remember { mutableStateListOf(selectedItem) }
+
+    LaunchedEffect(selectedItem) {
+        hideNavigationBar = selectedItem == postItem
+
+        if (!hideNavigationBar) {
+            if (navigationStack.size > 1) {
+                navigationStack[1] = selectedItem
+            } else {
+                navigationStack.add(selectedItem)
+            }
+        }
+    }
+
+    val backHandlingEnabled by remember { mutableStateOf(true) }
+    BackHandler(backHandlingEnabled) {
+
+        if (navigationStack.last() == homeItem && selectedItem != postItem) {
+            onFinish()
+        } else if (selectedItem != postItem || navigationStack.last() != homeItem) {
+            if (selectedItem == postItem) {
+                hideNavigationBar = false
+            } else {
+                navigationStack.removeLast()
+            }
+            selectedItem = navigationStack.last()
+        } else {
+            selectedItem = navigationStack.last()
+        }
+    }
+
 
     Scaffold(
         bottomBar = {
@@ -110,11 +140,7 @@ fun HomeNavigation() {
             when (selectedItem) {
                 0 -> FeedScreen()
                 1 -> SearchScreen()
-                2 -> {
-                    PostScreen()
-                    hideNavigationBar = true
-                }
-
+                2 -> PostScreen()
                 3 -> NotificationsScreen()
                 4 -> ProfileScreen()
             }
