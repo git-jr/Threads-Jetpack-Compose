@@ -70,8 +70,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun HomeNavigation() {
-
-    var selectedItem by remember { mutableStateOf(0) }
+    var hideNavigationBar by remember { mutableStateOf(false) }
+    var selectedItem by remember { mutableStateOf(2) }
     val items = listOf("Feed", "Search", "Post", "Notifications", "Profile")
     val icons = listOf(
         Icons.Default.Home,
@@ -83,17 +83,19 @@ fun HomeNavigation() {
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                items.forEachIndexed { index, item ->
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                icons[index], contentDescription = item
-                            )
-                        },
-                        selected = selectedItem == index,
-                        onClick = { selectedItem = index }
-                    )
+            if (!hideNavigationBar) {
+                NavigationBar {
+                    items.forEachIndexed { index, item ->
+                        NavigationBarItem(
+                            icon = {
+                                Icon(
+                                    icons[index], contentDescription = item
+                                )
+                            },
+                            selected = selectedItem == index,
+                            onClick = { selectedItem = index }
+                        )
+                    }
                 }
             }
         }
@@ -108,7 +110,11 @@ fun HomeNavigation() {
             when (selectedItem) {
                 0 -> FeedScreen()
                 1 -> SearchScreen()
-                2 -> PostScreen()
+                2 -> {
+                    PostScreen()
+                    hideNavigationBar = true
+                }
+
                 3 -> NotificationsScreen()
                 4 -> ProfileScreen()
             }

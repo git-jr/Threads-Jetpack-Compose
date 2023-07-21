@@ -44,6 +44,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -155,6 +156,37 @@ fun PostScreen(modifier: Modifier = Modifier) {
                             )
                     }
                 }
+            }
+
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Qualquer pessoa pode responder",
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        color = Color.Gray
+                    )
+                )
+
+                val context = LocalContext.current
+                Text(
+                    text = "Publicar",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF0195F7).copy(
+                            alpha = if (canAddNewPost) 1f else 0.5f
+                        )
+                    ),
+                    modifier = Modifier
+                        .clickable(enabled = canAddNewPost) {
+                            context.showMessage("Publicar a line!")
+                        }
+                )
             }
 
         }
