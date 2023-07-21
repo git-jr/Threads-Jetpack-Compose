@@ -1,11 +1,11 @@
 package com.paradoxo.threadscompose.sampleData
 
 import com.paradoxo.threadscompose.R
-import com.paradoxo.threadscompose.getCurrentTime
 import com.paradoxo.threadscompose.model.Notification
 import com.paradoxo.threadscompose.model.NotificationType
 import com.paradoxo.threadscompose.model.Post
 import com.paradoxo.threadscompose.model.UserAccount
+import com.paradoxo.threadscompose.utils.getCurrentTime
 import java.util.UUID
 
 import kotlin.random.Random

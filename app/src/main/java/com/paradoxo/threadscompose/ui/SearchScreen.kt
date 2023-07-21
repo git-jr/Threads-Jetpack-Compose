@@ -430,8 +430,3 @@ private fun AccountItemPreview() {
         SampleData().userAccounts.first()
     )
 }
-
-
-fun Context.showMessage(message: String) {
-    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-}

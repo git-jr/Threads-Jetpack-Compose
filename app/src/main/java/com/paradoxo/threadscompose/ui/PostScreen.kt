@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import com.paradoxo.threadscompose.R
 import com.paradoxo.threadscompose.model.UserAccount
 import com.paradoxo.threadscompose.sampleData.SampleData
+import com.paradoxo.threadscompose.utils.showMessage
 
 @Composable
 fun PostScreen(modifier: Modifier = Modifier) {

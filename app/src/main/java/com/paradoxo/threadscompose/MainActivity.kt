@@ -2,7 +2,6 @@ package com.paradoxo.threadscompose
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,20 +22,25 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.paradoxo.threadscompose.ui.FeedScreen
 import com.paradoxo.threadscompose.ui.NotificationsScreen
 import com.paradoxo.threadscompose.ui.PostScreen
 import com.paradoxo.threadscompose.ui.ProfileScreen
 import com.paradoxo.threadscompose.ui.SearchScreen
 import com.paradoxo.threadscompose.ui.theme.ThreadsComposeTheme
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 
 class MainActivity : ComponentActivity() {
@@ -49,10 +53,10 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    val navController: NavHostController = rememberNavController()
+
                     HomeNavigation(
-                        onFinish = {
-                            finish()
-                        }
+                        navController = navController
                     )
                 }
             }
@@ -63,72 +67,51 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun HomeNavigation(
-    onFinish: () -> Unit = {}
+    navController: NavHostController
 ) {
-    var hideNavigationBar by remember { mutableStateOf(false) }
-    var selectedItem by remember { mutableStateOf(0) }
-    val items = listOf("Feed", "Search", "Post", "Notifications", "Profile")
-    val icons = listOf(
-        Icons.Default.Home,
-        Icons.Default.Search,
-        Icons.Default.Send,
-        Icons.Default.Favorite,
-        Icons.Default.Person
-    )
+    var showNavigationBar by remember { mutableStateOf(true) }
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
 
-    val homeItem = 0
-    val postItem = 2
-
-    val navigationStack = remember { mutableStateListOf(selectedItem) }
-
-    LaunchedEffect(selectedItem) {
-        hideNavigationBar = selectedItem == postItem
-
-        if (!hideNavigationBar) {
-            if (navigationStack.size > 1) {
-                navigationStack[1] = selectedItem
-            } else {
-                navigationStack.add(selectedItem)
-            }
-        }
+    LaunchedEffect(currentDestination) {
+        showNavigationBar = currentDestination?.route != Screen.Post.route
     }
-
-    val backHandlingEnabled by remember { mutableStateOf(true) }
-    BackHandler(backHandlingEnabled) {
-
-        if (navigationStack.last() == homeItem && selectedItem != postItem) {
-            onFinish()
-        } else if (selectedItem != postItem || navigationStack.last() != homeItem) {
-            if (selectedItem == postItem) {
-                hideNavigationBar = false
-            } else {
-                navigationStack.removeLast()
-            }
-            selectedItem = navigationStack.last()
-        } else {
-            selectedItem = navigationStack.last()
-        }
-    }
-
 
     Scaffold(
         bottomBar = {
-            if (!hideNavigationBar) {
+            if (showNavigationBar) {
                 NavigationBar {
-                    items.forEachIndexed { index, item ->
+                    screenItems.forEach { screen ->
                         NavigationBarItem(
                             icon = {
                                 Icon(
-                                    icons[index], contentDescription = item
+                                    screen.resourceId,
+                                    contentDescription = null
                                 )
                             },
-                            selected = selectedItem == index,
-                            onClick = { selectedItem = index }
+                            selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                            onClick = {
+                                if (screen.route == Screen.Post.route) {
+                                    navController.navigate(screen.route) {
+                                        launchSingleTop = true
+                                    }
+                                } else {
+                                    navController.navigate(screen.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
+                            }
                         )
                     }
                 }
             }
         }
+
+
     ) { paddingValues ->
         Column(
             Modifier
@@ -137,37 +120,31 @@ fun HomeNavigation(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            when (selectedItem) {
-                0 -> FeedScreen()
-                1 -> SearchScreen()
-                2 -> PostScreen()
-                3 -> NotificationsScreen()
-                4 -> ProfileScreen()
+
+            NavHost(navController = navController, startDestination = Screen.Feed.route) {
+                composable(Screen.Feed.route) { FeedScreen() }
+                composable(Screen.Search.route) { SearchScreen() }
+                composable(Screen.Post.route) { PostScreen() }
+                composable(Screen.Notifications.route) { NotificationsScreen() }
+                composable(Screen.Profile.route) { ProfileScreen() }
             }
         }
     }
 }
 
 
-fun getCurrentTime(): Long {
-    return LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+sealed class Screen(val route: String, val resourceId: ImageVector) {
+    object Feed : Screen("feed", Icons.Default.Home)
+    object Search : Screen("search", Icons.Default.Search)
+    object Post : Screen("post", Icons.Default.Send)
+    object Notifications : Screen("notifications", Icons.Default.Favorite)
+    object Profile : Screen("profile", Icons.Default.Person)
 }
 
-fun formatTimeElapsed(start: Long, end: Long): String {
-    val elapsedSeconds = end - start
-
-    val secondsInMinute = 60
-    val secondsInHour = 60 * secondsInMinute
-    val secondsInDay = 24 * secondsInHour
-    val secondsInWeek = 7 * secondsInDay
-    val secondsInMonth = 30 * secondsInDay
-
-    return when {
-        elapsedSeconds < secondsInHour -> "${elapsedSeconds / secondsInMinute} min"
-        elapsedSeconds < secondsInDay -> "${elapsedSeconds / secondsInHour} h"
-        elapsedSeconds < secondsInWeek -> "${elapsedSeconds / secondsInDay} d"
-        elapsedSeconds < secondsInMonth -> "${elapsedSeconds / secondsInWeek} sem"
-        elapsedSeconds < secondsInMonth * 12 -> "${elapsedSeconds / secondsInMonth} m"
-        else -> "${elapsedSeconds / (secondsInMonth * 12)} a"
-    }
-}
+val screenItems = listOf(
+    Screen.Feed,
+    Screen.Search,
+    Screen.Post,
+    Screen.Notifications,
+    Screen.Profile
+)

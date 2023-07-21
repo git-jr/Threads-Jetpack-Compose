@@ -40,10 +40,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.paradoxo.threadscompose.R
-import com.paradoxo.threadscompose.formatTimeElapsed
-import com.paradoxo.threadscompose.getCurrentTime
 import com.paradoxo.threadscompose.model.Post
 import com.paradoxo.threadscompose.sampleData.SampleData
+import com.paradoxo.threadscompose.utils.formatTimeElapsed
+import com.paradoxo.threadscompose.utils.getCurrentTime
 
 @Composable
 fun PostItem(post: Post) {
