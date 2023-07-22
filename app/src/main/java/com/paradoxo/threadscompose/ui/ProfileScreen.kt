@@ -1,7 +1,10 @@
 package com.paradoxo.threadscompose.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,8 +20,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -51,8 +52,10 @@ import com.paradoxo.threadscompose.sampleData.SampleData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier) {
-
+fun ProfileScreen(
+    modifier: Modifier = Modifier,
+    onNavigateToInstagram: () -> Unit = { }
+) {
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -61,16 +64,38 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                     title = {},
                     navigationIcon = {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_circle),
+                            painter = painterResource(id = R.drawable.ic_net),
                             contentDescription = "Profile",
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
+                            tint = Color.Black,
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .size(24.dp),
+
+                            )
                     },
                     actions = {
+
                         Icon(
-                            imageVector = Icons.Default.Menu,
+                            painter = painterResource(id = R.drawable.ic_insta),
+                            contentDescription = "Instagram",
+                            tint = Color.Black,
+                            modifier = Modifier
+                                .clickable {
+                                    onNavigateToInstagram()
+                                }
+                                .padding(8.dp)
+                                .size(24.dp),
+                        )
+
+                        Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_menu_config),
                             contentDescription = "Profile",
-                            modifier = Modifier.padding(horizontal = 16.dp)
+                            tint = Color.Black,
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .size(24.dp)
                         )
                     }
                 )
@@ -103,7 +128,7 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                                 text = "Junior Martins",
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 32.sp
+                                    fontSize = 24.sp
                                 ),
                             )
                             Row(
@@ -113,22 +138,18 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                                     text = "jr.obom",
                                     style = MaterialTheme.typography.titleMedium
                                 )
-                                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                                Spacer(modifier = Modifier.padding(horizontal = 2.dp))
 
-                                SuggestionChip(
-                                    onClick = { /*TODO*/ },
-                                    label = {
-                                        Text(
-                                            text = "threads.net",
-                                            fontSize = 12.sp,
+                                Text(
+                                    text = "threads.net",
+                                    color = Color.Gray.copy(alpha = 0.6f),
+                                    fontSize = 12.sp,
+                                    modifier = Modifier
+                                        .background(
+                                            color = Color.LightGray.copy(alpha = 0.15f),
+                                            shape = RoundedCornerShape(50)
                                         )
-                                    },
-                                    shape = RoundedCornerShape(50),
-                                    colors = SuggestionChipDefaults.suggestionChipColors(
-                                        containerColor = Color.LightGray.copy(alpha = 0.3f),
-                                        labelColor = Color.Gray.copy(alpha = 0.6f)
-                                    ),
-                                    border = null,
+                                        .padding(vertical = 6.dp, horizontal = 8.dp)
                                 )
                             }
                         }
@@ -213,22 +234,24 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
+
                         Row(
                             Modifier
                                 .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             SuggestionChip(
-                                onClick = { /*TODO*/ },
+                                onClick = {},
                                 label = {
                                     Text(
-                                        text = "Editar perfil",
+                                        text = "Editar Perfil",
                                         textAlign = TextAlign.Center,
+                                        fontSize = 14.sp,
                                         modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 8.dp),
-                                        fontSize = 16.sp
+                                            .padding(vertical = 8.dp)
+                                            .weight(1f),
                                     )
                                 },
                                 colors = SuggestionChipDefaults.suggestionChipColors(
@@ -239,21 +262,22 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                                 ),
                                 shape = RoundedCornerShape(30),
                                 modifier = Modifier
-                                    .weight(0.5f)
                                     .align(Alignment.CenterVertically)
+                                    .weight(0.5f),
                             )
 
-                            Spacer(modifier = Modifier.width(16.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+
                             SuggestionChip(
-                                onClick = { /*TODO*/ },
+                                onClick = {},
                                 label = {
                                     Text(
-                                        text = "Compartilhar perfil",
+                                        text = "Compartilhar Perfil",
                                         textAlign = TextAlign.Center,
+                                        fontSize = 14.sp,
                                         modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 8.dp),
-                                        fontSize = 16.sp
+                                            .padding(vertical = 8.dp)
+                                            .weight(1f),
                                     )
                                 },
                                 colors = SuggestionChipDefaults.suggestionChipColors(
@@ -263,9 +287,10 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                                     borderColor = Color.Black.copy(alpha = 0.15f)
                                 ),
                                 shape = RoundedCornerShape(30),
-                                modifier = Modifier.weight(0.5f)
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .weight(0.5f),
                             )
-
                         }
                     }
                 }

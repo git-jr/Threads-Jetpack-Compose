@@ -1,5 +1,7 @@
 package com.paradoxo.threadscompose
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -56,7 +58,13 @@ class MainActivity : ComponentActivity() {
                     val navController: NavHostController = rememberNavController()
 
                     HomeNavigation(
-                        navController = navController
+                        navController = navController,
+                        navigateToInstagram = {
+                            val instagramIntent = Intent(Intent.ACTION_VIEW).apply {
+                                data = Uri.parse("https://www.instagram.com")
+                            }
+                            startActivity(instagramIntent)
+                        }
                     )
                 }
             }
@@ -67,7 +75,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun HomeNavigation(
-    navController: NavHostController
+    navController: NavHostController,
+    navigateToInstagram: () -> Unit = {}
 ) {
     var showNavigationBar by remember { mutableStateOf(true) }
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -121,12 +130,16 @@ fun HomeNavigation(
             verticalArrangement = Arrangement.Center
         ) {
 
-            NavHost(navController = navController, startDestination = Screen.Feed.route) {
+            NavHost(navController = navController, startDestination = Screen.Profile.route) {
                 composable(Screen.Feed.route) { FeedScreen() }
                 composable(Screen.Search.route) { SearchScreen() }
                 composable(Screen.Post.route) { PostScreen() }
                 composable(Screen.Notifications.route) { NotificationsScreen() }
-                composable(Screen.Profile.route) { ProfileScreen() }
+                composable(Screen.Profile.route) {
+                    ProfileScreen(
+                        onNavigateToInstagram = navigateToInstagram
+                    )
+                }
             }
         }
     }
