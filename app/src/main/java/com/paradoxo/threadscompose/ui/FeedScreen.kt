@@ -1,6 +1,7 @@
 package com.paradoxo.threadscompose.ui
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
@@ -17,6 +18,7 @@ fun FeedScreen(modifier: Modifier = Modifier) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
+            .systemBarsPadding()
     ) {
         items(postLists) { post ->
             PostItem(post)

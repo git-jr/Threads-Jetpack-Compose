@@ -57,7 +57,7 @@ fun ProfileScreen(
     onNavigateToInstagram: () -> Unit = { }
 ) {
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         topBar = {
             Column {
                 TopAppBar(
@@ -111,7 +111,7 @@ fun ProfileScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues = paddingValues)
+//                .padding(paddingValues = paddingValues)
         ) {
             item {
                 Column(

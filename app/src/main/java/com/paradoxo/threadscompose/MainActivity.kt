@@ -6,7 +6,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -16,11 +18,9 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,6 +30,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -52,13 +54,11 @@ import com.paradoxo.threadscompose.ui.theme.ThreadsComposeTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
             ThreadsComposeTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
+                Box(Modifier.fillMaxSize()) {
                     val navController: NavHostController = rememberNavController()
 
                     var showNavigationBar by remember { mutableStateOf(false) }
@@ -69,7 +69,6 @@ class MainActivity : ComponentActivity() {
                         showNavigationBar =
                             !(currentDestination?.route == Destiny.Post.route || currentDestination?.route == Destiny.Login.route)
                     }
-
 
                     ThreadsApp(
                         navController = navController,
@@ -96,7 +95,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ThreadsApp(
-    content: @Composable () -> Unit,
+    content: @Composable (PaddingValues) -> Unit,
     navController: NavHostController,
     showNavigationBar: Boolean,
     currentDestination: NavDestination?
@@ -139,12 +138,13 @@ fun ThreadsApp(
     ) { paddingValues ->
         Column(
             Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            content()
+            Box(Modifier.fillMaxSize()) {
+                content(paddingValues)
+            }
         }
     }
 }
@@ -154,7 +154,6 @@ fun ThreadsNavHost(
     navController: NavHostController,
     navigateToInstagram: () -> Unit = {}
 ) {
-
     NavHost(
         navController = navController,
         startDestination = Destiny.LoginNavigation.route
@@ -189,7 +188,9 @@ fun NavGraphBuilder.loginGraph(
 }
 
 fun NavGraphBuilder.homeGraph(
-    onNavigateToInstagram: () -> Unit = {}
+    onNavigateToInstagram: () -> Unit = {},
+    paddingValues: PaddingValues = PaddingValues(0.dp)
+
 ) {
     navigation(
         startDestination = Destiny.Feed.route,
@@ -201,6 +202,7 @@ fun NavGraphBuilder.homeGraph(
         composable(Destiny.Notifications.route) { NotificationsScreen() }
         composable(Destiny.Profile.route) {
             ProfileScreen(
+                Modifier.padding(paddingValues),
                 onNavigateToInstagram = {
                     onNavigateToInstagram()
                 }
