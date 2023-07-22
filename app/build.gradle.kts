@@ -53,6 +53,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.lifecycle.viewmodel)
     implementation(libs.navigation.compose)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)

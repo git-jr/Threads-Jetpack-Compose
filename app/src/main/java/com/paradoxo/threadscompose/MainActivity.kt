@@ -30,14 +30,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navigation
 import com.paradoxo.threadscompose.ui.FeedScreen
+import com.paradoxo.threadscompose.ui.LoginScreen
 import com.paradoxo.threadscompose.ui.NotificationsScreen
 import com.paradoxo.threadscompose.ui.PostScreen
 import com.paradoxo.threadscompose.ui.ProfileScreen
@@ -57,13 +61,31 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val navController: NavHostController = rememberNavController()
 
-                    HomeNavigation(
+                    var showNavigationBar by remember { mutableStateOf(false) }
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentDestination = navBackStackEntry?.destination
+
+                    LaunchedEffect(currentDestination) {
+                        showNavigationBar =
+                            !(currentDestination?.route == Destiny.Post.route || currentDestination?.route == Destiny.Login.route)
+                    }
+
+
+                    ThreadsApp(
                         navController = navController,
-                        navigateToInstagram = {
-                            val instagramIntent = Intent(Intent.ACTION_VIEW).apply {
-                                data = Uri.parse("https://www.instagram.com")
-                            }
-                            startActivity(instagramIntent)
+                        showNavigationBar = showNavigationBar,
+                        currentDestination = currentDestination,
+                        content = {
+                            ThreadsNavHost(
+                                navController = navController,
+                                navigateToInstagram = {
+                                    val instagramIntent = Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse("https://www.instagram.com/threadsapp/")
+                                    )
+                                    startActivity(instagramIntent)
+                                }
+                            )
                         }
                     )
                 }
@@ -72,20 +94,13 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
 @Composable
-fun HomeNavigation(
+fun ThreadsApp(
+    content: @Composable () -> Unit,
     navController: NavHostController,
-    navigateToInstagram: () -> Unit = {}
+    showNavigationBar: Boolean,
+    currentDestination: NavDestination?
 ) {
-    var showNavigationBar by remember { mutableStateOf(true) }
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
-
-    LaunchedEffect(currentDestination) {
-        showNavigationBar = currentDestination?.route != Screen.Post.route
-    }
-
     Scaffold(
         bottomBar = {
             if (showNavigationBar) {
@@ -93,14 +108,15 @@ fun HomeNavigation(
                     screenItems.forEach { screen ->
                         NavigationBarItem(
                             icon = {
-                                Icon(
-                                    screen.resourceId,
-                                    contentDescription = null
-                                )
+                                screen.resourceId?.let { assetIcon ->
+                                    Icon(
+                                        assetIcon, contentDescription = null
+                                    )
+                                }
                             },
                             selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                             onClick = {
-                                if (screen.route == Screen.Post.route) {
+                                if (screen.route == Destiny.Post.route) {
                                     navController.navigate(screen.route) {
                                         launchSingleTop = true
                                     }
@@ -109,6 +125,7 @@ fun HomeNavigation(
                                         popUpTo(navController.graph.findStartDestination().id) {
                                             saveState = true
                                         }
+
                                         launchSingleTop = true
                                         restoreState = true
                                     }
@@ -119,8 +136,6 @@ fun HomeNavigation(
                 }
             }
         }
-
-
     ) { paddingValues ->
         Column(
             Modifier
@@ -129,35 +144,87 @@ fun HomeNavigation(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-
-            NavHost(navController = navController, startDestination = Screen.Profile.route) {
-                composable(Screen.Feed.route) { FeedScreen() }
-                composable(Screen.Search.route) { SearchScreen() }
-                composable(Screen.Post.route) { PostScreen() }
-                composable(Screen.Notifications.route) { NotificationsScreen() }
-                composable(Screen.Profile.route) {
-                    ProfileScreen(
-                        onNavigateToInstagram = navigateToInstagram
-                    )
-                }
-            }
+            content()
         }
     }
 }
 
+@Composable
+fun ThreadsNavHost(
+    navController: NavHostController,
+    navigateToInstagram: () -> Unit = {}
+) {
 
-sealed class Screen(val route: String, val resourceId: ImageVector) {
-    object Feed : Screen("feed", Icons.Default.Home)
-    object Search : Screen("search", Icons.Default.Search)
-    object Post : Screen("post", Icons.Default.Send)
-    object Notifications : Screen("notifications", Icons.Default.Favorite)
-    object Profile : Screen("profile", Icons.Default.Person)
+    NavHost(
+        navController = navController,
+        startDestination = Destiny.LoginNavigation.route
+    ) {
+        loginGraph {
+            navController.navigate(Destiny.HomeNavigation.route) {
+                popUpTo(0)
+            }
+        }
+        homeGraph(
+            onNavigateToInstagram = {
+                navigateToInstagram()
+            }
+        )
+    }
+}
+
+
+fun NavGraphBuilder.loginGraph(
+    onNavigateToHome: () -> Unit = {}
+) {
+    navigation(
+        startDestination = Destiny.Login.route,
+        route = Destiny.LoginNavigation.route
+    ) {
+        composable(Destiny.Login.route) {
+            LoginScreen(
+                onNavigateToHome = onNavigateToHome
+            )
+        }
+    }
+}
+
+fun NavGraphBuilder.homeGraph(
+    onNavigateToInstagram: () -> Unit = {}
+) {
+    navigation(
+        startDestination = Destiny.Feed.route,
+        route = Destiny.HomeNavigation.route
+    ) {
+        composable(Destiny.Feed.route) { FeedScreen() }
+        composable(Destiny.Search.route) { SearchScreen() }
+        composable(Destiny.Post.route) { PostScreen() }
+        composable(Destiny.Notifications.route) { NotificationsScreen() }
+        composable(Destiny.Profile.route) {
+            ProfileScreen(
+                onNavigateToInstagram = {
+                    onNavigateToInstagram()
+                }
+            )
+        }
+    }
+}
+
+sealed class Destiny(val route: String, val resourceId: ImageVector? = null) {
+    object Login : Destiny("login", Icons.Default.Person)
+    object Feed : Destiny("feed", Icons.Default.Home)
+    object Search : Destiny("search", Icons.Default.Search)
+    object Post : Destiny("post", Icons.Default.Send)
+    object Notifications : Destiny("notifications", Icons.Default.Favorite)
+    object Profile : Destiny("profile", Icons.Default.Person)
+
+    object LoginNavigation : Destiny("loginNavigation")
+    object HomeNavigation : Destiny("homeNavigation")
 }
 
 val screenItems = listOf(
-    Screen.Feed,
-    Screen.Search,
-    Screen.Post,
-    Screen.Notifications,
-    Screen.Profile
+    Destiny.Feed,
+    Destiny.Search,
+    Destiny.Post,
+    Destiny.Notifications,
+    Destiny.Profile
 )
