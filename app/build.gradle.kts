@@ -1,7 +1,15 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.googleServices)
+}
+
+val properties = Properties().apply {
+    FileInputStream(rootProject.file("local.properties")).use { load(it) }
 }
 
 android {
@@ -19,6 +27,19 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        // To generate a new facebook app id, go to https://developers.facebook.com/apps/
+        // and create a new app. Then, go to Settings > Basic and copy the App ID.
+        // Finally, paste the App ID in the facebookAppId on file local.properties
+        val facebookAppId = properties.getProperty("facebookAppId") ?: "INSIRA O ID DO SEU APP AQUI"
+        resValue("string", "facebook_app_id", facebookAppId)
+
+        val facebookClientToken = properties.getProperty("facebookClientToken") ?: "INSIRA O TOKEN DO SEU APP AQUI"
+        resValue("string", "facebook_client_token", facebookClientToken)
+
+        val fbLoginProtocolScheme = "fb${facebookAppId}"
+        resValue("string", "fb_login_protocol_scheme", fbLoginProtocolScheme)
+
     }
 
     buildTypes {
@@ -53,6 +74,10 @@ android {
 }
 
 dependencies {
+    implementation(libs.google.services)
+    implementation (libs.facebook.android.sdk)
+    implementation(libs.firebase.auth.ktx)
+
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.navigation.compose)
 

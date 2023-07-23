@@ -1,5 +1,7 @@
 package com.paradoxo.threadscompose.ui
 
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,32 +19,49 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.Profile
+import com.facebook.login.LoginManager
+import com.facebook.login.LoginResult
+import com.google.firebase.auth.FacebookAuthProvider
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.paradoxo.threadscompose.R
 import com.paradoxo.threadscompose.ui.theme.ThreadsComposeTheme
+import com.paradoxo.threadscompose.utils.showMessage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 @Composable
 fun LoginScreen(
     loginViewModel: LoginViewModel = viewModel(),
-    onNavigateToHome: () -> Unit = {}
+    onNavigateToHome: (String?) -> Unit = {},
 ) {
     val loginState by loginViewModel.uiState.collectAsState()
-    loginViewModel.login()
+
+    val context = LocalContext.current
 
     Column(
         Modifier
@@ -54,13 +73,22 @@ fun LoginScreen(
             }
 
             AppState.LoggedIn -> {
-                onNavigateToHome()
+                onNavigateToHome(null)
             }
 
             AppState.LoggedOut -> {
-                LoggedOutScreen() {
-                    onNavigateToHome()
-                }
+                LoggedOutScreen(
+                    onAuthComplete = { profileName ->
+                        onNavigateToHome(profileName)
+                        Log.i("login", "onAuthComplete: $profileName")
+                    },
+                    onAuthError = {
+                        context.showMessage("Erro ao fazer login, tente novamente")
+                    },
+                    onAuthCancel = {
+                        context.showMessage("Login cancelado")
+                    }
+                )
             }
         }
     }
@@ -68,14 +96,61 @@ fun LoginScreen(
 
 @Composable
 fun LoggedOutScreen(
-    onNavigateToHome: () -> Unit = {}
+    onAuthComplete: (String?) -> Unit = {},
+    onAuthError: () -> Unit = {},
+    onAuthCancel: () -> Unit = {}
 ) {
+    val scope = rememberCoroutineScope()
+    val loginManager = LoginManager.getInstance()
+    val callbackManager = remember { CallbackManager.Factory.create() }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = loginManager.createLogInActivityResultContract(callbackManager, null),
+        onResult = {
+            // The result are handled by the callbackManager
+        }
+    )
+
+    DisposableEffect(Unit) {
+        loginManager.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+            override fun onCancel() {
+                onAuthCancel()
+            }
+
+            override fun onError(error: FacebookException) {
+                onAuthError()
+            }
+
+            override fun onSuccess(result: LoginResult) {
+                scope.launch {
+                    val token = result.accessToken.token
+                    val credential = FacebookAuthProvider.getCredential(token)
+                    val authResult = Firebase.auth.signInWithCredential(credential).await()
+                    if (authResult.user != null) {
+                        Profile.getCurrentProfile()?.name?.let { profileName ->
+                            onAuthComplete(profileName)
+                        } ?: run {
+                            Log.e("login", "Login error: Profile name is null")
+                            onAuthError()
+                        }
+                    } else {
+                        Log.i("login", "Unable to sign in with Facebook")
+                        onAuthError()
+                    }
+                }
+            }
+        })
+
+        onDispose {
+            loginManager.unregisterCallback(callbackManager)
+        }
+    }
+
     Column(
         Modifier
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-
         Image(
             painter = painterResource(id = R.drawable.bg_lines_1),
             contentDescription = "app logo"
@@ -85,8 +160,12 @@ fun LoggedOutScreen(
             Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+
             Row(
                 modifier = Modifier
+                    .clickable {
+                        launcher.launch(listOf("email", "public_profile"))
+                    }
                     .fillMaxWidth()
                     .background(
                         color = Color.White,
@@ -131,7 +210,7 @@ fun LoggedOutScreen(
                 ),
                 modifier = Modifier
                     .clickable {
-                        onNavigateToHome()
+                        onAuthComplete(null)
                     }
                     .padding(16.dp)
             )
@@ -196,10 +275,16 @@ class LoginViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(LoginState())
     val uiState: StateFlow<LoginState> = _uiState.asStateFlow()
 
-    fun login() {
+    private var auth: FirebaseAuth = Firebase.auth
+
+    init {
         viewModelScope.launch {
-            delay(500)
-            _uiState.value = LoginState(AppState.LoggedOut)
+            delay(1500)
+            if (auth.currentUser != null) {
+                _uiState.value = LoginState(AppState.LoggedIn)
+            } else {
+                _uiState.value = LoginState(AppState.LoggedOut)
+            }
         }
     }
 }
