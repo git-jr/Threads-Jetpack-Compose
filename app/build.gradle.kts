@@ -74,6 +74,8 @@ android {
 }
 
 dependencies {
+
+    implementation(libs.coil.compose)
     implementation(libs.google.services)
     implementation (libs.facebook.android.sdk)
     implementation(libs.firebase.auth.ktx)

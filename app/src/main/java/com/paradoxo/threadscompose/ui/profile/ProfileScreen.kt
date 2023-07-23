@@ -1,4 +1,4 @@
-package com.paradoxo.threadscompose.ui
+package com.paradoxo.threadscompose.ui.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.paradoxo.threadscompose.R
 import com.paradoxo.threadscompose.sampleData.SampleData
+import com.paradoxo.threadscompose.ui.PostItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -111,7 +112,7 @@ fun ProfileScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-//                .padding(paddingValues = paddingValues)
+                .padding(paddingValues = paddingValues)
         ) {
             item {
                 Column(

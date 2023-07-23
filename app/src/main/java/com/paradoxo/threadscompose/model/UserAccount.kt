@@ -5,7 +5,8 @@ data class UserAccount(
     val name: String = "",
     val userName: String = "",
     val bio: String = "",
-    val imageProfileUrl: Int = 0,
+    val link: String = "",
+    val imageProfileUrl: String = "",
     val posts:List<Long> = emptyList(),
     val follows:List<Long> = emptyList(),
     val followers:List<Long> = emptyList()

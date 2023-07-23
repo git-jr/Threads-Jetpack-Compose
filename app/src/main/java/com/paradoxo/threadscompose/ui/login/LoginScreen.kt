@@ -1,4 +1,4 @@
-package com.paradoxo.threadscompose.ui
+package com.paradoxo.threadscompose.ui.login
 
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -55,7 +55,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 @Composable
-fun LoginScreen(
+internal fun LoginScreen(
     loginViewModel: LoginViewModel = viewModel(),
     onNavigateToHome: (String?) -> Unit = {},
 ) {
@@ -227,64 +227,10 @@ fun LoggedOutScreenPreview() {
     }
 }
 
-@Composable
-private fun SplashScreen() {
-    Column(
-        Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_logo_colors),
-            contentDescription = "app logo",
-            modifier = Modifier.size(200.dp)
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SplashScreenPreview() {
-    ThreadsComposeTheme {
-        SplashScreen()
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
     ThreadsComposeTheme {
         LoginScreen()
-    }
-}
-
-sealed class AppState {
-    object Loading : AppState()
-    object LoggedIn : AppState()
-    object LoggedOut : AppState()
-}
-
-
-data class LoginState(
-    var appState: AppState = AppState.Loading
-)
-
-class LoginViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(LoginState())
-    val uiState: StateFlow<LoginState> = _uiState.asStateFlow()
-
-    private var auth: FirebaseAuth = Firebase.auth
-
-    init {
-        viewModelScope.launch {
-            delay(1500)
-            if (auth.currentUser != null) {
-                _uiState.value = LoginState(AppState.LoggedIn)
-            } else {
-                _uiState.value = LoginState(AppState.LoggedOut)
-            }
-        }
     }
 }

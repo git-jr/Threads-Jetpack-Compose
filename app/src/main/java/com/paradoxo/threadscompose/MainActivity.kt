@@ -3,7 +3,6 @@ package com.paradoxo.threadscompose
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -44,90 +43,80 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
-import com.facebook.AccessToken
-import com.facebook.Profile
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import com.paradoxo.threadscompose.model.UserAccount
+import com.paradoxo.threadscompose.sampleData.SampleData
 import com.paradoxo.threadscompose.ui.FeedScreen
-import com.paradoxo.threadscompose.ui.LoginScreen
 import com.paradoxo.threadscompose.ui.NotificationsScreen
 import com.paradoxo.threadscompose.ui.PostScreen
-import com.paradoxo.threadscompose.ui.ProfileScreen
 import com.paradoxo.threadscompose.ui.SearchScreen
+import com.paradoxo.threadscompose.ui.login.LoginScreen
+import com.paradoxo.threadscompose.ui.profile.ProfileEditScreen
+import com.paradoxo.threadscompose.ui.profile.ProfileScreen
 import com.paradoxo.threadscompose.ui.theme.ThreadsComposeTheme
 import com.paradoxo.threadscompose.utils.showMessage
 
 
 class MainActivity : ComponentActivity() {
 
-    private lateinit var auth: FirebaseAuth
-
-    public override fun onStart() {
-        super.onStart()
-        val currentUser = auth.currentUser
-        if (currentUser != null) {
-            Log.i("login", "${currentUser.displayName} Está conectado")
-        } else {
-            Log.i("login", "Não está conectado ao Firebase")
-        }
-
-        val accessToken = AccessToken.getCurrentAccessToken()
-        val isLoggedIn = accessToken != null && !accessToken.isExpired
-
-        if (isLoggedIn) {
-            Log.i("login", "Está conectado ao facebook")
-            Log.i(
-                "login",
-                "Foto de perfil: ${Profile.getCurrentProfile()?.getProfilePictureUri(200, 200)}"
-            )
-
-        } else {
-            Log.i("login", "Não está conectado ao Facebook")
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        auth = Firebase.auth
+        val testMode = true
 
-        setContent {
-            ThreadsComposeTheme {
-                val context = LocalContext.current
-                Box(Modifier.fillMaxSize()) {
-                    val navController: NavHostController = rememberNavController()
-
-                    var showNavigationBar by remember { mutableStateOf(false) }
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentDestination = navBackStackEntry?.destination
-
-                    LaunchedEffect(currentDestination) {
-                        showNavigationBar =
-                            !(currentDestination?.route == Destiny.Post.route || currentDestination?.route == Destiny.Login.route)
-                    }
-
-                    ThreadsApp(
-                        navController = navController,
-                        showNavigationBar = showNavigationBar,
-                        currentDestination = currentDestination,
-                        content = {
-                            ThreadsNavHost(
-                                navController = navController,
-                                navigateToInstagram = {
-                                    val instagramIntent = Intent(
-                                        Intent.ACTION_VIEW,
-                                        Uri.parse("https://www.instagram.com/threadsapp/")
-                                    )
-                                    startActivity(instagramIntent)
-                                },
-                                onSayHello = { profileName ->
-                                    context.showMessage("Fala aí $profileName!")
-                                }
-                            )
-                        }
+        if (testMode) {
+            setContent {
+                ProfileEditScreen(
+                    userAccount = UserAccount(
+                        name = "Junior",
+                        userName = "jr.obom",
+                        bio = "",
+                        link = "https://www.youtube.com/Paradoxo10",
+                        imageProfileUrl = SampleData().images.first(),
+                        posts = listOf(1, 2, 3, 4, 5, 6, 7, 8, 9),
+                        follows = listOf(1, 2, 3, 4, 5, 6, 7, 8, 9),
+                        followers = listOf(1, 2, 3, 4, 5, 6, 7, 8, 9)
                     )
+                )
+            }
+        } else {
+
+            setContent {
+                ThreadsComposeTheme {
+                    val context = LocalContext.current
+                    Box(Modifier.fillMaxSize()) {
+                        val navController: NavHostController = rememberNavController()
+
+                        var showNavigationBar by remember { mutableStateOf(false) }
+                        val navBackStackEntry by navController.currentBackStackEntryAsState()
+                        val currentDestination = navBackStackEntry?.destination
+
+                        LaunchedEffect(currentDestination) {
+                            showNavigationBar =
+                                !(currentDestination?.route == Destiny.Post.route || currentDestination?.route == Destiny.Login.route)
+                        }
+
+                        ThreadsApp(
+                            navController = navController,
+                            showNavigationBar = showNavigationBar,
+                            currentDestination = currentDestination,
+                            content = {
+                                ThreadsNavHost(
+                                    navController = navController,
+                                    navigateToInstagram = {
+                                        val instagramIntent = Intent(
+                                            Intent.ACTION_VIEW,
+                                            Uri.parse("https://www.instagram.com/threadsapp/")
+                                        )
+                                        startActivity(instagramIntent)
+                                    },
+                                    onSayHello = { profileName ->
+                                        context.showMessage("Fala aí $profileName!")
+                                    }
+                                )
+                            }
+                        )
+                    }
                 }
             }
         }

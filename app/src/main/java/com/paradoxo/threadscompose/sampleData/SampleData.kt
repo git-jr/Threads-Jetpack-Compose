@@ -41,11 +41,12 @@ class SampleData {
         "Vivendo a vida ao máximo!"
     )
 
-    private val imagens = listOf(
-        R.drawable.profile_pic_emoji_1,
-        R.drawable.profile_pic_emoji_2,
-        R.drawable.profile_pic_emoji_3,
-        R.drawable.profile_pic_emoji_4,
+    val images = listOf(
+        "https://raw.githubusercontent.com/git-jr/sample-files/7bc859dfa8a6241fa9c0d723ba6e7517bdfedd50/profile%20pics/profile_pic_emoji_1.png",
+        "https://raw.githubusercontent.com/git-jr/sample-files/7bc859dfa8a6241fa9c0d723ba6e7517bdfedd50/profile%20pics/profile_pic_emoji_2.png",
+        "https://raw.githubusercontent.com/git-jr/sample-files/7bc859dfa8a6241fa9c0d723ba6e7517bdfedd50/profile%20pics/profile_pic_emoji_3.png",
+        "https://raw.githubusercontent.com/git-jr/sample-files/7bc859dfa8a6241fa9c0d723ba6e7517bdfedd50/profile%20pics/profile_pic_emoji_4.png",
+        "https://raw.githubusercontent.com/git-jr/sample-files/7bc859dfa8a6241fa9c0d723ba6e7517bdfedd50/profile%20pics/profile_pic_emoji_5.png",
     )
 
     init {
@@ -60,7 +61,7 @@ class SampleData {
                 name = "Nome $i",
                 userName = "usuario$i",
                 bio = bios[i - 1],
-                imageProfileUrl = imagens.random(),
+                imageProfileUrl = images.random(),
                 posts = randomNumbers.subList(0, Random.nextInt(1, 1000)),
                 follows = randomNumbers.subList(0, Random.nextInt(1, 1000)),
                 followers = randomNumbers.subList(0, Random.nextInt(1, 1000)),
@@ -72,7 +73,7 @@ class SampleData {
                 userAccount = userAccount,
                 description = descriptions[i - 1],
                 date = getCurrentTime(),
-                medias = if (Random.nextBoolean()) imagens.shuffled() else listOf(),
+                medias = if (Random.nextBoolean()) images.shuffled() else listOf(),
                 likes = generateSampleLikes(),
                 comments = generateSampleComments()
             )

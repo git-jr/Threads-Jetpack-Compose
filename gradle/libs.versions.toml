@@ -14,8 +14,10 @@ navigation-compose = "2.6.0"
 viewmodel-compose = "2.6.1"
 firebase-auth-ktx = "22.1.0"
 facebook-android-sdk = "16.1.3"
+coil-compose = "2.4.0"
 
 [libraries]
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil-compose" }
 facebook-android-sdk = { module = "com.facebook.android:facebook-android-sdk", version.ref = "facebook-android-sdk" }
 google-services = { module = "com.google.gms:google-services", version.ref = "google-services" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation-compose" }

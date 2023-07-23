@@ -1,6 +1,5 @@
 package com.paradoxo.threadscompose.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -51,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.paradoxo.threadscompose.R
 import com.paradoxo.threadscompose.model.UserAccount
 import com.paradoxo.threadscompose.sampleData.SampleData
@@ -135,8 +135,13 @@ fun PostScreen(modifier: Modifier = Modifier) {
                             },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Image(
-                            painter = painterResource(id = currentUser.imageProfileUrl),
+                        AsyncImage(
+                            model = currentUser.imageProfileUrl,
+                            placeholder = painterResource(
+                                id =
+                                R.drawable.placeholder_image
+                            ),
+                            error = painterResource(id = R.drawable.placeholder_image),
                             contentDescription = "avatar",
                             modifier = Modifier
                                 .padding(horizontal = 20.dp)
@@ -225,8 +230,10 @@ private fun EditPostItem(
                 .weight(1.5f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(id = postState.userAccount.imageProfileUrl),
+            AsyncImage(
+                model = postState.userAccount.imageProfileUrl,
+                placeholder = painterResource(id = R.drawable.placeholder_image),
+                error = painterResource(id = R.drawable.placeholder_image),
                 contentDescription = "avatar",
                 modifier = Modifier
                     .padding(horizontal = 12.dp)

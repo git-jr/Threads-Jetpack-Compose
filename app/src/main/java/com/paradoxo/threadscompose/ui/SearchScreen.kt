@@ -1,10 +1,7 @@
 package com.paradoxo.threadscompose.ui
 
-import android.content.Context
 import android.view.ViewTreeObserver
-import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -59,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import coil.compose.AsyncImage
 import com.paradoxo.threadscompose.R
 import com.paradoxo.threadscompose.model.UserAccount
 import com.paradoxo.threadscompose.sampleData.SampleData
@@ -282,8 +280,10 @@ private fun AccountItem(account: UserAccount) {
                 .weight(0.2f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(id = account.imageProfileUrl),
+            AsyncImage(
+                model = account.imageProfileUrl,
+                placeholder = painterResource(id = R.drawable.placeholder_image),
+                error = painterResource(id = R.drawable.placeholder_image),
                 contentDescription = "avatar",
                 modifier = Modifier
                     .padding(horizontal = 10.dp)
@@ -316,8 +316,10 @@ private fun AccountItem(account: UserAccount) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row {
-                    Image(
-                        painter = painterResource(id = R.drawable.profile_pic_emoji_1),
+                    AsyncImage(
+                        model = R.drawable.profile_pic_emoji_1,
+                        placeholder = painterResource(id = R.drawable.placeholder_image),
+                        error = painterResource(id = R.drawable.placeholder_image),
                         contentDescription = "avatar",
                         modifier = Modifier
                             .size(22.dp)
@@ -331,8 +333,10 @@ private fun AccountItem(account: UserAccount) {
                             .padding(2.dp)
                     )
 
-                    Image(
-                        painter = painterResource(id = R.drawable.profile_pic_emoji_3),
+                    AsyncImage(
+                        model = R.drawable.profile_pic_emoji_3,
+                        placeholder = painterResource(id = R.drawable.placeholder_image),
+                        error = painterResource(id = R.drawable.placeholder_image),
                         contentDescription = "avatar",
                         modifier = Modifier
                             .size(22.dp)

@@ -5,7 +5,7 @@ data class Post(
     val userAccount: UserAccount = UserAccount(),
     val description: String = "",
     val date: Long = 0L,
-    val medias: List<Int> = emptyList(),
+    val medias: List<String> = emptyList(),
     val likes: List<Long> = emptyList(),
     val comments: List<Post> = emptyList()
 )

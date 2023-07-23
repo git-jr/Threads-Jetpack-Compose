@@ -39,6 +39,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.paradoxo.threadscompose.R
 import com.paradoxo.threadscompose.model.Post
 import com.paradoxo.threadscompose.sampleData.SampleData
@@ -66,8 +67,10 @@ fun PostItem(post: Post) {
                     .weight(0.2f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Image(
-                    painter = painterResource(id = post.userAccount.imageProfileUrl),
+                AsyncImage(
+                    model = post.userAccount.imageProfileUrl,
+                    placeholder = painterResource(id = R.drawable.placeholder_image),
+                    error = painterResource(id = R.drawable.placeholder_image),
                     contentDescription = "avatar",
                     modifier = Modifier
                         .padding(horizontal = 8.dp)
@@ -134,8 +137,10 @@ fun PostItem(post: Post) {
                         ) {
                             items(post.medias) { media ->
                                 Row {
-                                    Image(
-                                        painter = painterResource(id = media),
+                                    AsyncImage(
+                                        model = media,
+                                        placeholder = painterResource(id = R.drawable.placeholder_image),
+                                        error = painterResource(id = R.drawable.placeholder_image),
                                         contentDescription = "avatar",
                                         contentScale = ContentScale.Crop,
                                         modifier = Modifier
