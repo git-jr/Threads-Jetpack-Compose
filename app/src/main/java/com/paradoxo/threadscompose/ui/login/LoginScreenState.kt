@@ -7,5 +7,7 @@ sealed class AppState {
 }
 
 data class LoginState(
-    var appState: AppState = AppState.Loading
+    var appState: AppState = AppState.Loading,
+    var profileInServer : Boolean = false,
+    val onProfileInServerChange: (state: Boolean) -> Unit = {},
 )

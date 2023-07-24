@@ -75,6 +75,7 @@ android {
 
 dependencies {
 
+    implementation(platform(libs.firebase.bom))
     implementation(libs.coil.compose)
     implementation(libs.google.services)
     implementation (libs.facebook.android.sdk)
@@ -82,6 +83,7 @@ dependencies {
 
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.navigation.compose)
+    implementation(libs.firebase.firestore.ktx)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 

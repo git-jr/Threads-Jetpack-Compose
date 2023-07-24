@@ -57,7 +57,7 @@ class SampleData {
 
         for (i in 1..10) {
             val userAccount = UserAccount(
-                id = i.toLong(),
+                id = i.toString(),
                 name = "Nome $i",
                 userName = "usuario$i",
                 bio = bios[i - 1],
@@ -82,7 +82,7 @@ class SampleData {
 
         for (i in 1..10) {
             userAccounts[i - 1] =
-                userAccounts[i - 1].copy(posts = posts.filter { it.userAccount.id == i.toLong() }
+                userAccounts[i - 1].copy(posts = posts.filter { it.userAccount.id == i.toString() }
                     .map { it.id.toLong() })
         }
 

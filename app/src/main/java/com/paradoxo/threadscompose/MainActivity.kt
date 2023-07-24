@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -43,6 +44,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
+import com.facebook.Profile
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.paradoxo.threadscompose.model.UserAccount
 import com.paradoxo.threadscompose.sampleData.SampleData
 import com.paradoxo.threadscompose.ui.FeedScreen
@@ -50,6 +54,7 @@ import com.paradoxo.threadscompose.ui.NotificationsScreen
 import com.paradoxo.threadscompose.ui.PostScreen
 import com.paradoxo.threadscompose.ui.SearchScreen
 import com.paradoxo.threadscompose.ui.login.LoginScreen
+import com.paradoxo.threadscompose.ui.login.LoginViewModel
 import com.paradoxo.threadscompose.ui.profile.ProfileEditScreen
 import com.paradoxo.threadscompose.ui.profile.ProfileScreen
 import com.paradoxo.threadscompose.ui.theme.ThreadsComposeTheme
@@ -62,7 +67,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        val testMode = true
+        val testMode = false
 
         if (testMode) {
             setContent {
@@ -80,10 +85,8 @@ class MainActivity : ComponentActivity() {
                 )
             }
         } else {
-
             setContent {
                 ThreadsComposeTheme {
-                    val context = LocalContext.current
                     Box(Modifier.fillMaxSize()) {
                         val navController: NavHostController = rememberNavController()
 
@@ -91,9 +94,19 @@ class MainActivity : ComponentActivity() {
                         val navBackStackEntry by navController.currentBackStackEntryAsState()
                         val currentDestination = navBackStackEntry?.destination
 
+                        val destinysWithoutNavigationBar by remember {
+                            mutableStateOf(
+                                listOf(
+                                    Destiny.Login.route,
+                                    Destiny.ProfileEdit.route,
+                                    Destiny.Post.route,
+                                )
+                            )
+                        }
+
                         LaunchedEffect(currentDestination) {
                             showNavigationBar =
-                                !(currentDestination?.route == Destiny.Post.route || currentDestination?.route == Destiny.Login.route)
+                                !destinysWithoutNavigationBar.contains(currentDestination?.route)
                         }
 
                         ThreadsApp(
@@ -109,9 +122,6 @@ class MainActivity : ComponentActivity() {
                                             Uri.parse("https://www.instagram.com/threadsapp/")
                                         )
                                         startActivity(instagramIntent)
-                                    },
-                                    onSayHello = { profileName ->
-                                        context.showMessage("Fala aí $profileName!")
                                     }
                                 )
                             }
@@ -181,16 +191,24 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun ThreadsNavHost(
         navController: NavHostController,
-        navigateToInstagram: () -> Unit = {},
-        onSayHello: (String) -> Unit = {}
+        navigateToInstagram: () -> Unit = {}
     ) {
         NavHost(
             navController = navController,
             startDestination = Destiny.LoginNavigation.route
         ) {
             loginGraph(
-                onNavigateToHome = { profileName ->
+                onNavigateToHome = { currentUser ->
                     navController.navigate(Destiny.HomeNavigation.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                onNavigateToProfileEdit = {
+                    navController.navigate(Destiny.ProfileEdit.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
                         }
@@ -198,8 +216,7 @@ class MainActivity : ComponentActivity() {
                         launchSingleTop = true
                         restoreState = true
                     }
-                    profileName?.let { onSayHello(it) }
-                },
+                }
             )
             homeGraph(
                 onNavigateToInstagram = {
@@ -211,15 +228,64 @@ class MainActivity : ComponentActivity() {
 
 
     private fun NavGraphBuilder.loginGraph(
-        onNavigateToHome: (String?) -> Unit = {}
+        onNavigateToHome: (UserAccount) -> Unit = {},
+        onNavigateToProfileEdit: () -> Unit = {}
     ) {
         navigation(
             startDestination = Destiny.Login.route,
             route = Destiny.LoginNavigation.route
         ) {
             composable(Destiny.Login.route) {
+                val loginViewModel: LoginViewModel = viewModel()
+
                 LoginScreen(
-                    onNavigateToHome = { onNavigateToHome(it) },
+                    loginViewModel = loginViewModel,
+                    onAuthComplete = {
+                        loginViewModel.getProfile(
+                            onSuccess = { userAccountOnFirebase ->
+                                if (userAccountOnFirebase.userName.isNotEmpty()) {
+                                    onNavigateToHome(userAccountOnFirebase)
+                                } else {
+                                    onNavigateToProfileEdit()
+                                }
+                            },
+                            onError = {
+                                onNavigateToProfileEdit()
+                            }
+                        )
+                    },
+                )
+            }
+
+            composable(Destiny.ProfileEdit.route) {
+                val loginViewModel: LoginViewModel = viewModel()
+                val context = LocalContext.current
+
+                val currentUser = Firebase.auth.currentUser
+
+                val profile = Profile.getCurrentProfile()
+                val profilePicUri = profile?.getProfilePictureUri(200, 200)
+
+                val userAccount = UserAccount(
+                    id = currentUser?.uid ?: "",
+                    name = currentUser?.displayName ?: "",
+                    userName = currentUser?.displayName?.lowercase()?.replace(" ", "_") ?: "",
+                    imageProfileUrl = profilePicUri?.toString() ?: "",
+                )
+
+                ProfileEditScreen(
+                    userAccount = userAccount,
+                    onSave = { userAccountUpdated ->
+                        loginViewModel.saveNewUser(
+                            userAccount = userAccountUpdated,
+                            onSuccess = {
+                                onNavigateToHome(userAccountUpdated)
+                            },
+                            onError = {
+                                context.showMessage("Erro ao salvar informações do perfil")
+                            }
+                        )
+                    }
                 )
             }
         }
@@ -256,6 +322,7 @@ class MainActivity : ComponentActivity() {
         object Post : Destiny("post", Icons.Default.Send)
         object Notifications : Destiny("notifications", Icons.Default.Favorite)
         object Profile : Destiny("profile", Icons.Default.Person)
+        object ProfileEdit : Destiny("profileEdit")
 
         object LoginNavigation : Destiny("loginNavigation")
         object HomeNavigation : Destiny("homeNavigation")

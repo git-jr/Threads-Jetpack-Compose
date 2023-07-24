@@ -31,8 +31,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.facebook.CallbackManager
 import com.facebook.FacebookCallback
@@ -41,23 +39,18 @@ import com.facebook.Profile
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.google.firebase.auth.FacebookAuthProvider
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.paradoxo.threadscompose.R
 import com.paradoxo.threadscompose.ui.theme.ThreadsComposeTheme
 import com.paradoxo.threadscompose.utils.showMessage
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 @Composable
 internal fun LoginScreen(
     loginViewModel: LoginViewModel = viewModel(),
-    onNavigateToHome: (String?) -> Unit = {},
+    onAuthComplete: (String?) -> Unit = {},
 ) {
     val loginState by loginViewModel.uiState.collectAsState()
 
@@ -73,13 +66,13 @@ internal fun LoginScreen(
             }
 
             AppState.LoggedIn -> {
-                onNavigateToHome(null)
+                onAuthComplete(null)
             }
 
             AppState.LoggedOut -> {
                 LoggedOutScreen(
                     onAuthComplete = { profileName ->
-                        onNavigateToHome(profileName)
+                        onAuthComplete(profileName)
                         Log.i("login", "onAuthComplete: $profileName")
                     },
                     onAuthError = {

@@ -1,7 +1,7 @@
 package com.paradoxo.threadscompose.model
 
 data class UserAccount(
-    val id: Long = 0,
+    val id: String = "",
     val name: String = "",
     val userName: String = "",
     val bio: String = "",

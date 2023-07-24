@@ -157,6 +157,7 @@ fun ProfileEditScreen(
                         BasicTextField(
                             value = bioEditTextState,
                             onValueChange = { bioEditTextState = it },
+                            modifier = Modifier.fillMaxWidth(),
                             maxLines = 3,
                             textStyle = TextStyle.Default.copy(
                                 fontSize = 16.sp
@@ -194,6 +195,7 @@ fun ProfileEditScreen(
                         BasicTextField(
                             value = linkEditTextState,
                             onValueChange = { linkEditTextState = it },
+                            modifier = Modifier.fillMaxWidth(),
                             maxLines = 3,
                             textStyle = TextStyle.Default.copy(
                                 fontSize = 16.sp
