@@ -27,7 +27,6 @@ class SampleData {
         "É sempre melhor quando estamos juntos.",
         "Inspire-se, mas seja você mesmo!"
     )
-
     private val bios = listOf(
         "Apaixonado por viagens e fotografia.",
         "Viciado em café e aventuras.",
@@ -40,7 +39,6 @@ class SampleData {
         "Buscando a magia em cada dia.",
         "Vivendo a vida ao máximo!"
     )
-
     val images = listOf(
         "https://raw.githubusercontent.com/git-jr/sample-files/7bc859dfa8a6241fa9c0d723ba6e7517bdfedd50/profile%20pics/profile_pic_emoji_1.png",
         "https://raw.githubusercontent.com/git-jr/sample-files/7bc859dfa8a6241fa9c0d723ba6e7517bdfedd50/profile%20pics/profile_pic_emoji_2.png",
@@ -132,5 +130,19 @@ class SampleData {
             )
         }
         return comments
+    }
+
+    fun generateSampleInvitedUser(): UserAccount {
+        return UserAccount(
+            id = UUID.randomUUID().toString(),
+            name = "Nome da pessoa convidada",
+            userName = "convidada_42",
+            bio = "O tal do Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+            link = "https://github.com/git-jr",
+            imageProfileUrl = images.random(),
+            posts = (1L..Random.nextLong(100)).toList(),
+            follows = (1L..Random.nextLong(100)).toList(),
+            followers = (1L..Random.nextLong(100)).toList(),
+        )
     }
 }

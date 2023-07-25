@@ -41,13 +41,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.paradoxo.threadscompose.R
+import com.paradoxo.threadscompose.model.UserAccount
 import com.paradoxo.threadscompose.sampleData.SampleData
 import com.paradoxo.threadscompose.ui.PostItem
 
@@ -55,7 +60,8 @@ import com.paradoxo.threadscompose.ui.PostItem
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
-    onNavigateToInstagram: () -> Unit = { }
+    onNavigateToInstagram: () -> Unit = { },
+    userAccount: UserAccount
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -126,7 +132,7 @@ fun ProfileScreen(
                     ) {
                         Column(modifier = Modifier.weight(0.8f)) {
                             Text(
-                                text = "Junior Martins",
+                                text = userAccount.name,
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 24.sp
@@ -136,7 +142,7 @@ fun ProfileScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "jr.obom",
+                                    text = "@${userAccount.userName}",
                                     style = MaterialTheme.typography.titleMedium
                                 )
                                 Spacer(modifier = Modifier.padding(horizontal = 2.dp))
@@ -157,8 +163,10 @@ fun ProfileScreen(
 
                         Box(modifier = Modifier.weight(0.2f)) {
 
-                            Image(
-                                painter = painterResource(id = R.drawable.profile_pic_emoji_2),
+                            AsyncImage(
+                                model = userAccount.imageProfileUrl,
+                                placeholder = painterResource(id = R.drawable.placeholder_image),
+                                error = painterResource(id = R.drawable.placeholder_image),
                                 contentDescription = "Profile",
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -172,9 +180,12 @@ fun ProfileScreen(
                             .padding(vertical = 8.dp, horizontal = 16.dp),
                     ) {
                         Text(
-                            text = "Dev Android, produtor de conteudo tech e um Paradoxo!",
-                            modifier = Modifier.padding(bottom = 8.dp),
-                            style = MaterialTheme.typography.bodyLarge
+                            text = userAccount.bio,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 2,
+                            modifier = Modifier
+                                .padding(bottom = 8.dp),
+                            style = MaterialTheme.typography.bodyLarge,
                         )
 
                         Row(
@@ -214,7 +225,7 @@ fun ProfileScreen(
                             }
 
                             Text(
-                                text = "42",
+                                text = userAccount.followers.size.toString(),
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     color = Color.Gray.copy(alpha = 0.8f)
                                 )
@@ -227,11 +238,32 @@ fun ProfileScreen(
                                 )
                             )
                             Spacer(modifier = Modifier.width(4.dp))
+
+
+                            val accountLink = buildAnnotatedString {
+                                append(userAccount.link)
+                                addStringAnnotation(
+                                    tag = "URL",
+                                    annotation = userAccount.link,
+                                    start = 6,
+                                    end = 21
+                                )
+                            }
+
+                            val uriHandler = LocalUriHandler.current
                             Text(
-                                text = "• SemInscreveAí.com",
+                                text = "• $accountLink",
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     color = Color.Gray.copy(alpha = 0.8f)
-                                )
+                                ),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.clickable {
+                                    accountLink.getStringAnnotations("URL", 0, accountLink.length)
+                                        .firstOrNull()?.let { annotation ->
+                                            uriHandler.openUri(annotation.item)
+                                        }
+                                }
                             )
                         }
 
@@ -347,5 +379,7 @@ fun ProfileScreen(
 @Preview
 @Composable
 fun ProfileScreenPreview() {
-    ProfileScreen()
+    ProfileScreen(
+        userAccount = SampleData().generateSampleInvitedUser()
+    )
 }

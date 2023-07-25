@@ -23,6 +23,8 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +35,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -53,12 +56,16 @@ import com.paradoxo.threadscompose.ui.FeedScreen
 import com.paradoxo.threadscompose.ui.NotificationsScreen
 import com.paradoxo.threadscompose.ui.PostScreen
 import com.paradoxo.threadscompose.ui.SearchScreen
+import com.paradoxo.threadscompose.ui.login.AppState
 import com.paradoxo.threadscompose.ui.login.LoginScreen
 import com.paradoxo.threadscompose.ui.login.LoginViewModel
 import com.paradoxo.threadscompose.ui.profile.ProfileEditScreen
 import com.paradoxo.threadscompose.ui.profile.ProfileScreen
 import com.paradoxo.threadscompose.ui.theme.ThreadsComposeTheme
 import com.paradoxo.threadscompose.utils.showMessage
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 
 class MainActivity : ComponentActivity() {
@@ -193,12 +200,17 @@ class MainActivity : ComponentActivity() {
         navController: NavHostController,
         navigateToInstagram: () -> Unit = {}
     ) {
+        val sessionViewModel: SessionViewModel = viewModel()
+        val state = sessionViewModel.uiState.collectAsState()
+
         NavHost(
             navController = navController,
             startDestination = Destiny.LoginNavigation.route
         ) {
             loginGraph(
                 onNavigateToHome = { currentUser ->
+                    sessionViewModel.serCurrent(currentUser)
+
                     navController.navigate(Destiny.HomeNavigation.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
@@ -219,6 +231,7 @@ class MainActivity : ComponentActivity() {
                 }
             )
             homeGraph(
+                state = state,
                 onNavigateToInstagram = {
                     navigateToInstagram()
                 }
@@ -241,18 +254,22 @@ class MainActivity : ComponentActivity() {
                 LoginScreen(
                     loginViewModel = loginViewModel,
                     onAuthComplete = {
-                        loginViewModel.getProfile(
-                            onSuccess = { userAccountOnFirebase ->
-                                if (userAccountOnFirebase.userName.isNotEmpty()) {
-                                    onNavigateToHome(userAccountOnFirebase)
-                                } else {
+                        it?.let {
+                            loginViewModel.getProfile(
+                                onSuccess = { userAccountOnFirebase ->
+                                    if (userAccountOnFirebase.userName.isNotEmpty()) {
+                                        onNavigateToHome(userAccountOnFirebase)
+                                    } else {
+                                        onNavigateToProfileEdit()
+                                    }
+                                },
+                                onError = {
                                     onNavigateToProfileEdit()
                                 }
-                            },
-                            onError = {
-                                onNavigateToProfileEdit()
-                            }
-                        )
+                            )
+                        } ?: run {
+                            onNavigateToHome(SampleData().generateSampleInvitedUser())
+                        }
                     },
                 )
             }
@@ -293,7 +310,8 @@ class MainActivity : ComponentActivity() {
 
     private fun NavGraphBuilder.homeGraph(
         onNavigateToInstagram: () -> Unit = {},
-        paddingValues: PaddingValues = PaddingValues(0.dp)
+        paddingValues: PaddingValues = PaddingValues(0.dp),
+        state: State<SessionState>
 
     ) {
         navigation(
@@ -306,7 +324,8 @@ class MainActivity : ComponentActivity() {
             composable(Destiny.Notifications.route) { NotificationsScreen() }
             composable(Destiny.Profile.route) {
                 ProfileScreen(
-                    Modifier.padding(paddingValues),
+                    userAccount = state.value.userAccount,
+                    modifier = Modifier.padding(paddingValues),
                     onNavigateToInstagram = {
                         onNavigateToInstagram()
                     }
@@ -336,3 +355,18 @@ class MainActivity : ComponentActivity() {
         Destiny.Profile
     )
 }
+
+internal class SessionViewModel : ViewModel() {
+
+    private val _uiState = MutableStateFlow(SessionState())
+    val uiState: StateFlow<SessionState> = _uiState.asStateFlow()
+
+    fun serCurrent(currentUser: UserAccount) {
+        _uiState.value = _uiState.value.copy(userAccount = currentUser)
+    }
+}
+
+data class SessionState(
+    var appState: AppState = AppState.Loading,
+    var userAccount: UserAccount = UserAccount(),
+)

@@ -72,7 +72,11 @@ internal fun LoginScreen(
             AppState.LoggedOut -> {
                 LoggedOutScreen(
                     onAuthComplete = { profileName ->
-                        onAuthComplete(profileName)
+                        if (profileName == null) {
+                            onAuthComplete(null)
+                        } else {
+                            onAuthComplete(profileName)
+                        }
                         Log.i("login", "onAuthComplete: $profileName")
                     },
                     onAuthError = {
