@@ -2,6 +2,7 @@ package com.paradoxo.threadscompose.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,7 +48,11 @@ import com.paradoxo.threadscompose.utils.formatTimeElapsed
 import com.paradoxo.threadscompose.utils.getCurrentTime
 
 @Composable
-fun PostItem(post: Post) {
+fun PostItem(
+    post: Post,
+    isLiked: Boolean = false,
+    onLikeClick: (String) -> Unit = {},
+) {
     val dividerColor = Color.Gray.copy(alpha = 0.2f)
 
     val commentsSize = post.comments.size
@@ -165,7 +170,11 @@ fun PostItem(post: Post) {
                 ) {
                     Icon(
                         imageVector = Icons.Default.Favorite,
-                        contentDescription = "like"
+                        contentDescription = "like",
+                        modifier = Modifier.clickable {
+                            onLikeClick(post.id)
+                        },
+                        tint = if (isLiked) Color.Red else Color.Black
                     )
 
                     Spacer(modifier = Modifier.width(10.dp))
@@ -385,5 +394,8 @@ private fun ContainerMoreTwoProfilePics() {
 @Preview(showBackground = true)
 @Composable
 private fun PostItemPreview() {
-    PostItem(SampleData().posts.first())
+    PostItem(
+        post = SampleData().posts.first(),
+        isLiked = true
+    )
 }

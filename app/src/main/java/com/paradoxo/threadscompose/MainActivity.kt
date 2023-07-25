@@ -50,7 +50,9 @@ import androidx.navigation.navigation
 import com.facebook.Profile
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.paradoxo.threadscompose.model.Post
 import com.paradoxo.threadscompose.model.UserAccount
+import com.paradoxo.threadscompose.network.firebase.PostFirestore
 import com.paradoxo.threadscompose.sampleData.SampleData
 import com.paradoxo.threadscompose.ui.FeedScreen
 import com.paradoxo.threadscompose.ui.NotificationsScreen
@@ -78,18 +80,34 @@ class MainActivity : ComponentActivity() {
 
         if (testMode) {
             setContent {
-                ProfileEditScreen(
-                    userAccount = UserAccount(
-                        name = "Junior",
-                        userName = "jr.obom",
-                        bio = "",
-                        link = "https://www.youtube.com/Paradoxo10",
-                        imageProfileUrl = SampleData().images.first(),
-                        posts = listOf(1, 2, 3, 4, 5, 6, 7, 8, 9),
-                        follows = listOf(1, 2, 3, 4, 5, 6, 7, 8, 9),
-                        followers = listOf(1, 2, 3, 4, 5, 6, 7, 8, 9)
-                    )
-                )
+                FeedScreen(posts = SampleData().posts)
+
+                val postFirestore = PostFirestore()
+//                postFirestore.getAllPosts(
+//                    onSuccess = { posts ->
+//                        setContent {
+//                            ThreadsComposeTheme {
+//                                FeedScreen(posts = posts)
+//                            }
+//                        }
+//                    },
+//                    onError = {
+//                        setContent {
+//                            ThreadsComposeTheme {
+//                                FeedScreen(posts = SampleData().posts)
+//                            }
+//                        }
+//                    }
+//                )
+
+
+//                postFirestore.insertPost(
+//                    SampleData().posts.first().copy(
+//                        medias = listOf(),
+//                        comments = listOf(),
+//                        likes = listOf()
+//                    )
+//                )
             }
         } else {
             setContent {
@@ -318,7 +336,11 @@ class MainActivity : ComponentActivity() {
             startDestination = Destiny.Feed.route,
             route = Destiny.HomeNavigation.route
         ) {
-            composable(Destiny.Feed.route) { FeedScreen() }
+            composable(Destiny.Feed.route) {
+                val postViewModel: FeedViewModel = viewModel()
+                val postState by postViewModel.uiState.collectAsState()
+                FeedScreen(posts = postState.posts)
+            }
             composable(Destiny.Search.route) { SearchScreen() }
             composable(Destiny.Post.route) { PostScreen() }
             composable(Destiny.Notifications.route) { NotificationsScreen() }
@@ -355,6 +377,28 @@ class MainActivity : ComponentActivity() {
         Destiny.Profile
     )
 }
+
+internal class FeedViewModel : ViewModel() {
+
+    private val _uiState = MutableStateFlow(FeedScreenState())
+    val uiState: StateFlow<FeedScreenState> = _uiState.asStateFlow()
+
+    init {
+        val postFirestore = PostFirestore()
+        postFirestore.getAllPosts(
+            onSuccess = { posts ->
+                _uiState.value = _uiState.value.copy(posts = posts)
+            },
+            onError = {
+
+            }
+        )
+    }
+}
+
+data class FeedScreenState(
+    var posts: List<Post> = emptyList(),
+)
 
 internal class SessionViewModel : ViewModel() {
 

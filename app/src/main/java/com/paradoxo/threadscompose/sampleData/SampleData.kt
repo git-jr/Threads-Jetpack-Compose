@@ -67,7 +67,7 @@ class SampleData {
             userAccounts.add(userAccount)
 
             val post = Post(
-                id = i,
+                id = i.toString(),
                 userAccount = userAccount,
                 description = descriptions[i - 1],
                 date = getCurrentTime(),
@@ -102,11 +102,11 @@ class SampleData {
 
     }
 
-    private fun generateSampleLikes(): List<Long> {
+    private fun generateSampleLikes(): List<String> {
         if (Random.nextBoolean()) return emptyList()
-        val likes = mutableListOf<Long>()
+        val likes = mutableListOf<String>()
         repeat(Random.nextInt(0, 1000)) {
-            likes.add(it.toLong())
+            likes.add(it.toString())
         }
         return likes
     }
@@ -119,7 +119,7 @@ class SampleData {
         repeat(Random.nextInt(0, 10)) {
             comments.add(
                 Post(
-                    id = it,
+                    id = it.toString(),
                     userAccount = userAccounts.random(),
                     description = "Comentário $it",
                     date = getCurrentTime(),

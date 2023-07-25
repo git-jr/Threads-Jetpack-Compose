@@ -5,23 +5,37 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.paradoxo.threadscompose.sampleData.SampleData
+import com.paradoxo.threadscompose.model.Post
 
 
 @Composable
-fun FeedScreen(modifier: Modifier = Modifier) {
-
-    val postLists = SampleData().posts
-
+fun FeedScreen(
+    modifier: Modifier = Modifier,
+    posts: List<Post> = emptyList(),
+) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
             .systemBarsPadding()
     ) {
-        items(postLists) { post ->
-            PostItem(post)
+        items(
+            posts,
+            key = { post -> post.id }
+        ) { post ->
+            val isLiked = rememberSaveable {
+                mutableStateOf(post.likes.contains(post.userAccount.id))
+            }
+            PostItem(
+                post,
+                isLiked.value,
+                onLikeClick = {
+                    isLiked.value = !isLiked.value
+                }
+            )
         }
     }
 }
