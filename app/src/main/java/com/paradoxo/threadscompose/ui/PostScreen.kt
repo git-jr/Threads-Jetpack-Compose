@@ -552,7 +552,7 @@ internal data class PostScreenState(
         userAccount = userAccount,
         date = getCurrentTime(),
         description = content,
-        medias = emptyList(),
+        medias = medias,
         likes = emptyList(),
         comments = emptyList(),
     )

@@ -75,11 +75,15 @@ android {
 
 dependencies {
 
+
+
     implementation(platform(libs.firebase.bom))
     implementation(libs.coil.compose)
     implementation(libs.google.services)
     implementation (libs.facebook.android.sdk)
     implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.storage.ktx)
+
 
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.navigation.compose)

@@ -28,6 +28,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,6 +69,7 @@ import com.paradoxo.threadscompose.utils.showMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity() {
@@ -76,13 +78,104 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        val testMode = true
+        val testMode = false
 
         if (testMode) {
             setContent {
-                PostScreen(currentUser = SampleData().generateSampleInvitedUser())
-
+                val scope = rememberCoroutineScope()
                 val postFirestore = PostFirestore()
+                PostScreen(
+                    currentUser = SampleData().generateSampleInvitedUser(),
+                    onSendPost = { posts: List<Post> ->
+                        scope.launch {
+                            postFirestore.insertPost(
+                                posts = posts,
+                                onSuccess = {},
+                                onError = {}
+                            )
+                        }
+                    }
+                )
+
+
+                // 17:06 Work successfully, but can be matter
+//                val mediaFirebaseStorage = MediaFirebaseStorage()
+//                val scope = rememberCoroutineScope()
+//                val context = LocalContext.current
+//
+//                PostScreen(
+//                    currentUser = SampleData().generateSampleInvitedUser(),
+//                    onSendPost = { posts: List<Post> ->
+//                        posts.forEach { currentPost ->
+//                            scope.launch {
+//                                mediaFirebaseStorage.uploadMediaOk(
+//                                    medias = currentPost.medias,
+//                                    onSuccess = {
+//                                        context.showMessage("Imagens enviadas com sucesso")
+//                                    },
+//                                    onError = {
+//                                        context.showMessage("Erro ao enviar imagens")
+//                                    }
+//                                )
+//                            }
+//                        }
+//                    }
+//                )
+                // 17:06 Work successfully, but can be matter
+
+
+//                val storage = Firebase.storage
+//                val storageRef = storage.reference
+
+//                PostScreen(
+//                    currentUser = SampleData().generateSampleInvitedUser(),
+//                    onSendPost = { posts: List<Post> ->
+//                        val dispatcher = Dispatchers.IO
+//
+//                        lifecycleScope.launch {
+//
+//                            val stackTasks: List<Deferred<Task<Uri>>> = posts.first().medias.map { imageUri ->
+//                                val uuid = UUID.randomUUID().toString()
+//                                val ref = storageRef.child("posts/$uuid")
+//
+//
+//                                // criar uma tarefa de upload para cada imagem
+//                                async(dispatcher) {
+//                                    val file = Uri.parse(imageUri)
+//                                    val uploadTask = ref.putFile(file)
+//
+//                                    uploadTask.continueWithTask { task ->
+//                                        if (!task.isSuccessful) {
+//                                            task.exception?.let {
+//                                                throw it
+//                                            }
+//                                        }
+//                                        ref.downloadUrl
+//                                    }.addOnCompleteListener { task ->
+//                                        if (task.isSuccessful) {
+//                                            val downloadUri = task.result
+//                                            Log.i("imageUpload", "imageUpload link: $downloadUri")
+//                                        } else {
+//                                            Log.i(
+//                                                "imageUpload",
+//                                                "imageUpload error: ${task.exception}"
+//                                            )
+//                                        }
+//                                    }
+//                                }
+//                            }
+//
+//                            // aguardar todas as tarefas terminarem
+//                            try {
+//                                stackTasks.awaitAll()
+//                            } catch (e: Exception) {
+//                                Log.i("imageUpload", "imageUpload error: ${e.message}")
+//                            }
+//                        }
+//                    }
+//                )
+
+//                    val postFirestore = PostFirestore ()
 //                postFirestore.getAllPosts(
 //                    onSuccess = { posts ->
 //                        setContent {
@@ -348,6 +441,9 @@ class MainActivity : ComponentActivity() {
             }
             composable(Destiny.Search.route) { SearchScreen() }
             composable(Destiny.Post.route) {
+
+                val scope = rememberCoroutineScope()
+
                 PostScreen(
                     currentUser = state.value.userAccount,
                     onBack = {
@@ -355,15 +451,18 @@ class MainActivity : ComponentActivity() {
                     },
                     onSendPost = { posts ->
                         val postFirestore = PostFirestore()
-                        postFirestore.insertPost(
-                            posts = posts,
-                            onSuccess = {
-                                onBack()
-                            },
-                            onError = {
-                                onBack()
-                            }
-                        )
+                        scope.launch {
+                            postFirestore.insertPost(
+                                posts = posts,
+                                onSuccess = {
+                                    onBack()
+                                },
+                                onError = {
+                                    onBack()
+                                }
+                            )
+                        }
+
                     }
                 )
             }

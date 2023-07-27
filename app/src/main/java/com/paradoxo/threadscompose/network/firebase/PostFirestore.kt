@@ -4,11 +4,19 @@ import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.paradoxo.threadscompose.model.Comment
 import com.paradoxo.threadscompose.model.Post
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.UUID
 
 class PostFirestore {
     private val firebaseFirestore = FirebaseFirestore.getInstance()
     private val dbPosts = firebaseFirestore.collection("posts")
+
+    private val mediaFirebaseStorage = MediaFirebaseStorage()
 
     fun getAllPosts(
         onSuccess: (List<Post>) -> Unit = {},
@@ -29,7 +37,7 @@ class PostFirestore {
     }
 
 
-    fun insertPost(
+    suspend fun insertPost(
         posts: List<Post>,
         onSuccess: () -> Unit = {},
         onError: () -> Unit = {},
@@ -57,7 +65,43 @@ class PostFirestore {
     ) {
         val batch = firebaseFirestore.batch()
 
-        val postsInThreadFormat = generatePostsInThreadFormat(posts)
+        val postsInThreadFormat: List<Post> = generatePostsInThreadFormat(posts)
+
+        CoroutineScope(IO).launch {
+            try {
+                postsInThreadFormat.forEach { post ->
+                    val urls = mediaFirebaseStorage.uploadMediaOk(post.medias)
+                    val newPost = post.copy(medias = urls)
+                    val documentReference = dbPosts.document()
+                    batch.set(documentReference, newPost)
+                }
+
+                batch.commit()
+                    .addOnSuccessListener {
+                        onSuccess()
+                        Log.i("insertPost", "Post inserido com sucesso")
+                    }
+                    .addOnFailureListener {
+                        onError()
+                        Log.i("insertPost", "Erro ao inserir post ${it.message}")
+                    }
+            } catch (e: Exception) {
+                Log.e("saveThread", "Error uploading media: ${e.message}")
+            }
+        }
+    }
+
+
+
+
+    private fun saveThreadOld(
+        posts: List<Post>,
+        onSuccess: () -> Unit,
+        onError: () -> Unit
+    ) {
+        val batch = firebaseFirestore.batch()
+
+        val postsInThreadFormat: List<Post> = generatePostsInThreadFormat(posts)
 
         postsInThreadFormat.forEach { post ->
             val documentReference = dbPosts.document()
@@ -100,8 +144,7 @@ class PostFirestore {
                     id = randomIdList[index],
                     mainPost = index == 0,
                     comments = commentList,
-                    likes = emptyList(),
-                    medias = emptyList(),
+                    likes = emptyList()
                 )
             )
         }
