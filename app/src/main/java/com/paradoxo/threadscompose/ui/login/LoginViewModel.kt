@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 
 internal class LoginViewModel : ViewModel() {
@@ -27,7 +28,7 @@ internal class LoginViewModel : ViewModel() {
 
     private fun verifyLoginState() {
         viewModelScope.launch {
-            delay(3000)
+            delay(Random.nextLong(600, 1200))
             if (auth.currentUser != null) {
                 _uiState.value = LoginState(AppState.LoggedIn)
             } else {

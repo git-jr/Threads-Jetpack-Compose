@@ -5,12 +5,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeGesturesPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -84,7 +87,11 @@ internal fun PostScreen(
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .padding(paddingValues = paddingValues)
+                .padding(
+                    paddingValues = PaddingValues(
+                        top = paddingValues.calculateTopPadding(),
+                    )
+                )
         ) {
             Divider(Modifier.fillMaxWidth(), color = Color.Gray.copy(alpha = 0.2f))
 
@@ -171,8 +178,10 @@ internal fun PostScreen(
 
             Row(
                 Modifier
+                    .imePadding()
+                    .safeGesturesPadding()
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -221,7 +230,7 @@ private fun EditPostItem(
         mutableStateOf(postState.content)
     }
 
-    LaunchedEffect(editTextState){
+    LaunchedEffect(editTextState) {
         postState.content = editTextState
     }
 
