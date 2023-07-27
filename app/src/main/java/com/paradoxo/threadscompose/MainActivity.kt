@@ -76,11 +76,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        val testMode = false
+        val testMode = true
 
         if (testMode) {
             setContent {
-                FeedScreen(posts = SampleData().posts)
+                PostScreen(currentUser = SampleData().generateSampleInvitedUser())
 
                 val postFirestore = PostFirestore()
 //                postFirestore.getAllPosts(
@@ -414,7 +414,7 @@ internal class FeedViewModel : ViewModel() {
                 _uiState.value = _uiState.value.copy(posts = posts)
             },
             onError = {
-
+                _uiState.value = _uiState.value.copy(posts = SampleData().posts)
             }
         )
     }

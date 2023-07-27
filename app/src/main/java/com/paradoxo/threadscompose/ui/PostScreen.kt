@@ -1,6 +1,13 @@
 package com.paradoxo.threadscompose.ui
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,9 +23,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeGesturesPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -68,9 +78,13 @@ internal fun PostScreen(
     onSendPost: (List<Post>) -> Unit = {},
     onBack: () -> Unit = {}
 ) {
+
     val posts = mutableListOf(
         PostScreenState(
-            currentUser, "", "",
+            currentUser,
+            content = "",
+            date = "",
+            medias = mutableListOf(),
             isFirstPost = true
         )
     ).toMutableStateList()
@@ -78,6 +92,21 @@ internal fun PostScreen(
     var canAddNewPost by remember {
         mutableStateOf(false)
     }
+
+
+    val pickMedia = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(),
+        onResult = { uris: List<Uri> ->
+//            uris.forEach {
+//                posts.last().medias.add(it.toString())
+//                Log.d("PostScreen", "onResult: ${it.toString()}")
+//            }
+
+            posts[posts.lastIndex] = posts.last().copy(
+                medias = uris.map { it.toString() }.toMutableList()
+            )
+        }
+    )
 
     Scaffold(
         modifier = modifier,
@@ -118,11 +147,24 @@ internal fun PostScreen(
                                 )
                             )
                         },
-                        onRemove = {
+                        onRemovePost = {
                             posts.remove(post)
                         },
                         onCanAddNew = {
                             canAddNewPost = it
+                        },
+                        onSelectMedia = {
+                            pickMedia.launch(
+                                PickVisualMediaRequest(
+                                    ActivityResultContracts.PickVisualMedia.ImageOnly
+                                )
+                            )
+                        },
+                        onRemoveMedia = { mediaUri, postaState ->
+                            val indexPost = posts.indexOf(postaState)
+                            posts[indexPost] = postaState.copy(
+                                medias = postaState.medias.filter { it != mediaUri }.toMutableList()
+                            )
                         }
                     )
                 }
@@ -181,7 +223,7 @@ internal fun PostScreen(
                     .imePadding()
                     .safeGesturesPadding()
                     .fillMaxWidth()
-                    .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 8.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -220,8 +262,10 @@ internal fun PostScreen(
 private fun EditPostItem(
     postState: PostScreenState,
     onAddNew: () -> Unit = {},
-    onRemove: () -> Unit = {},
-    onCanAddNew: (Boolean) -> Unit = {}
+    onRemovePost: () -> Unit = {},
+    onCanAddNew: (Boolean) -> Unit = {},
+    onSelectMedia: (PostScreenState) -> Unit = {},
+    onRemoveMedia: (String, PostScreenState) -> Unit = { _, _ -> }
 ) {
     val focusRequester = remember { FocusRequester() }
     val dividerColor = Color.Gray.copy(alpha = 0.2f)
@@ -291,7 +335,7 @@ private fun EditPostItem(
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .clickable {
-                                onRemove()
+                                onRemovePost()
                             }
                     )
                 }
@@ -353,21 +397,84 @@ private fun EditPostItem(
                 focusRequester.requestFocus()
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
 
-            Box(
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_attach_file),
-                    contentDescription = "attach file",
-                    tint = Color.Gray,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .rotate(45f)
+            val size = if (postState.medias.size > 0) 200.dp else 24.dp
 
-                )
+            if (postState.medias.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+
+                val scrollState = rememberScrollState()
+                Row(
+                    Modifier
+                        .height(height = size)
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp)
+                        .horizontalScroll(scrollState),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    postState.medias.forEach { imageUri ->
+                        Box {
+                            AsyncImage(
+                                model = imageUri,
+                                placeholder = painterResource(id = R.drawable.placeholder_image),
+                                error = painterResource(id = R.drawable.placeholder_image),
+                                contentDescription = "image",
+                                modifier = Modifier
+                                    .wrapContentHeight()
+                                    .padding(vertical = 8.dp)
+                                    .clip(RoundedCornerShape(10))
+                                    .border(
+                                        width = 1.dp,
+                                        color = Color.Gray.copy(alpha = 0.5f),
+                                        shape = RoundedCornerShape(10)
+                                    )
+                            )
+
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .padding(end = 12.dp, top = 22.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        Color.Black.copy(alpha = 0.5f)
+                                    )
+                                    .align(Alignment.TopEnd)
+                                    .clickable {
+                                        onRemoveMedia(imageUri, postState)
+                                    },
+                            ) {
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription = "attach file",
+                                    tint = Color.White,
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .padding(4.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                Spacer(modifier = Modifier.height(16.dp))
+                Box(
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_attach_file),
+                        contentDescription = "attach file",
+                        tint = Color.Gray,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .rotate(45f)
+                            .clickable {
+                                onSelectMedia(postState)
+                            }
+
+                    )
+                }
             }
+
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
@@ -399,6 +506,20 @@ private fun PostScreenAppBar(
         })
 }
 
+
+@Preview(showBackground = true)
+@Composable
+fun EditPostItemWithImagesPreview() {
+    EditPostItem(
+        postState = PostScreenState(
+            userAccount = SampleData().userAccounts[0],
+            content = "",
+            date = "10/10/2021",
+            medias = mutableListOf("1", "2", "3")
+        )
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
 fun PostScreenPreview() {
@@ -423,6 +544,7 @@ fun EditPostItemPreview() {
 internal data class PostScreenState(
     val userAccount: UserAccount,
     var content: String,
+    var medias: MutableList<String> = mutableListOf(),
     val date: String,
     val isFirstPost: Boolean = false
 ) {
@@ -434,5 +556,4 @@ internal data class PostScreenState(
         likes = emptyList(),
         comments = emptyList(),
     )
-
 }
