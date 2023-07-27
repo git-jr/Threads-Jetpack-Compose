@@ -1,6 +1,7 @@
 package com.paradoxo.threadscompose.sampleData
 
 import com.paradoxo.threadscompose.R
+import com.paradoxo.threadscompose.model.Comment
 import com.paradoxo.threadscompose.model.Notification
 import com.paradoxo.threadscompose.model.NotificationType
 import com.paradoxo.threadscompose.model.Post
@@ -72,7 +73,7 @@ class SampleData {
                 description = descriptions[i - 1],
                 date = getCurrentTime(),
                 medias = if (Random.nextBoolean()) images.shuffled() else listOf(),
-                likes = generateSampleLikes(),
+                likes = generateListRandomIdStrings(),
                 comments = generateSampleComments()
             )
             posts.add(post)
@@ -102,30 +103,25 @@ class SampleData {
 
     }
 
-    private fun generateSampleLikes(): List<String> {
+    private fun generateListRandomIdStrings(): List<String> {
         if (Random.nextBoolean()) return emptyList()
-        val likes = mutableListOf<String>()
+        val randomList = mutableListOf<String>()
         repeat(Random.nextInt(0, 1000)) {
-            likes.add(it.toString())
+            randomList.add(UUID.randomUUID().toString())
         }
-        return likes
+        return randomList
     }
 
-    private fun generateSampleComments(): List<Post> {
+    private fun generateSampleComments(): List<Comment> {
 
         if (Random.nextBoolean()) return emptyList()
 
-        val comments = mutableListOf<Post>()
+        val comments = mutableListOf<Comment>()
         repeat(Random.nextInt(0, 10)) {
             comments.add(
-                Post(
+                Comment(
                     id = it.toString(),
-                    userAccount = userAccounts.random(),
-                    description = "Comentário $it",
-                    date = getCurrentTime(),
-                    medias = listOf(),
-                    likes = listOf(),
-                    comments = listOf()
+                    profilePicAuthor = images.random(),
                 )
             )
         }

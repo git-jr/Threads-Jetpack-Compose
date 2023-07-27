@@ -61,7 +61,7 @@ import com.paradoxo.threadscompose.ui.PostItem
 fun ProfileScreen(
     modifier: Modifier = Modifier,
     onNavigateToInstagram: () -> Unit = { },
-    userAccount: UserAccount
+    currentUser: UserAccount
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -132,7 +132,7 @@ fun ProfileScreen(
                     ) {
                         Column(modifier = Modifier.weight(0.8f)) {
                             Text(
-                                text = userAccount.name,
+                                text = currentUser.name,
                                 style = MaterialTheme.typography.titleLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 24.sp
@@ -142,7 +142,7 @@ fun ProfileScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "@${userAccount.userName}",
+                                    text = "@${currentUser.userName}",
                                     style = MaterialTheme.typography.titleMedium
                                 )
                                 Spacer(modifier = Modifier.padding(horizontal = 2.dp))
@@ -164,7 +164,7 @@ fun ProfileScreen(
                         Box(modifier = Modifier.weight(0.2f)) {
 
                             AsyncImage(
-                                model = userAccount.imageProfileUrl,
+                                model = currentUser.imageProfileUrl,
                                 placeholder = painterResource(id = R.drawable.placeholder_image),
                                 error = painterResource(id = R.drawable.placeholder_image),
                                 contentDescription = "Profile",
@@ -180,7 +180,7 @@ fun ProfileScreen(
                             .padding(vertical = 8.dp, horizontal = 16.dp),
                     ) {
                         Text(
-                            text = userAccount.bio,
+                            text = currentUser.bio,
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 2,
                             modifier = Modifier
@@ -225,7 +225,7 @@ fun ProfileScreen(
                             }
 
                             Text(
-                                text = userAccount.followers.size.toString(),
+                                text = currentUser.followers.size.toString(),
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     color = Color.Gray.copy(alpha = 0.8f)
                                 )
@@ -241,10 +241,10 @@ fun ProfileScreen(
 
 
                             val accountLink = buildAnnotatedString {
-                                append(userAccount.link)
+                                append(currentUser.link)
                                 addStringAnnotation(
                                     tag = "URL",
-                                    annotation = userAccount.link,
+                                    annotation = currentUser.link,
                                     start = 6,
                                     end = 21
                                 )
@@ -380,6 +380,6 @@ fun ProfileScreen(
 @Composable
 fun ProfileScreenPreview() {
     ProfileScreen(
-        userAccount = SampleData().generateSampleInvitedUser()
+        currentUser = SampleData().generateSampleInvitedUser()
     )
 }

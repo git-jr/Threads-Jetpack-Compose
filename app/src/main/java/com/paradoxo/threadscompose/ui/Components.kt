@@ -1,6 +1,5 @@
 package com.paradoxo.threadscompose.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -214,15 +213,42 @@ fun PostItem(
 
                     when (post.comments.size) {
                         1 -> {
-                            ContainerOneProfilePic()
+                            ContainerOneProfilePic(
+                                post.comments.first().profilePicAuthor
+                            )
                         }
 
                         2 -> {
-                            ContainerTwoProfilePics()
+                            val firstProfilePic = post.comments.first().profilePicAuthor
+                            val secondProfilePic = post.comments[1].profilePicAuthor
+                            if (firstProfilePic == secondProfilePic) {
+                                ContainerOneProfilePic(
+                                    firstProfilePic
+                                )
+                            } else {
+                                ContainerTwoProfilePics(
+                                    firstProfilePic,
+                                    secondProfilePic
+                                )
+                            }
                         }
 
                         else -> {
-                            ContainerMoreTwoProfilePics()
+                            val firstProfilePic = post.comments.first().profilePicAuthor
+                            val secondProfilePic = post.comments[1].profilePicAuthor
+                            val thirdProfilePic = post.comments[2].profilePicAuthor
+                            if (secondProfilePic == thirdProfilePic && firstProfilePic == secondProfilePic) {
+                                ContainerOneProfilePic(
+                                    post.comments.first().profilePicAuthor
+                                )
+                            } else {
+                                ContainerMoreTwoProfilePics(
+                                    firstProfilePic,
+                                    secondProfilePic,
+                                    thirdProfilePic
+                                )
+                            }
+
                         }
                     }
 
@@ -273,12 +299,14 @@ fun PostItem(
 
 
 @Composable
-private fun ContainerOneProfilePic() {
+private fun ContainerOneProfilePic(
+    profilePicAuthor: String
+) {
     Box(
         Modifier.padding(horizontal = 8.dp, vertical = 16.dp)
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.profile_pic_emoji_3),
+        AsyncImage(
+            model = profilePicAuthor,
             contentDescription = "avatar",
             modifier = Modifier
                 .size(22.dp)
@@ -294,12 +322,15 @@ private fun ContainerOneProfilePic() {
 }
 
 @Composable
-private fun ContainerTwoProfilePics() {
+private fun ContainerTwoProfilePics(
+    firstProfilePic: String,
+    secondProfilePic: String
+) {
     Box(
         Modifier.padding(horizontal = 8.dp, vertical = 16.dp)
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.profile_pic_emoji_3),
+        AsyncImage(
+            model = firstProfilePic,
             contentDescription = "avatar",
             modifier = Modifier
                 .size(22.dp)
@@ -313,8 +344,8 @@ private fun ContainerTwoProfilePics() {
                 .padding(2.dp)
         )
 
-        Image(
-            painter = painterResource(id = R.drawable.profile_pic_emoji_1),
+        AsyncImage(
+            model = secondProfilePic,
             contentDescription = "avatar",
             modifier = Modifier
                 .size(22.dp)
@@ -331,7 +362,11 @@ private fun ContainerTwoProfilePics() {
 }
 
 @Composable
-private fun ContainerMoreTwoProfilePics() {
+private fun ContainerMoreTwoProfilePics(
+    firstProfilePic: String,
+    secondProfilePic: String,
+    thirdProfilePic: String
+) {
     Box(
         Modifier.padding(horizontal = 8.dp)
     ) {
@@ -341,8 +376,8 @@ private fun ContainerMoreTwoProfilePics() {
                 .padding(start = 8.dp, end = 8.dp, top = 8.dp),
             verticalArrangement = Arrangement.Center,
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.profile_pic_emoji_3),
+            AsyncImage(
+                model = firstProfilePic,
                 contentDescription = "avatar",
                 modifier = Modifier
                     .size(22.dp)
@@ -356,8 +391,8 @@ private fun ContainerMoreTwoProfilePics() {
                     .align(Alignment.End),
             )
 
-            Image(
-                painter = painterResource(id = R.drawable.profile_pic_emoji_1),
+            AsyncImage(
+                model = secondProfilePic,
                 contentDescription = "avatar",
                 modifier = Modifier
                     .size(16.dp)
@@ -372,8 +407,8 @@ private fun ContainerMoreTwoProfilePics() {
                     .align(Alignment.Start)
             )
 
-            Image(
-                painter = painterResource(id = R.drawable.profile_pic_emoji_4),
+            AsyncImage(
+                model = thirdProfilePic,
                 contentDescription = "avatar",
                 modifier = Modifier
                     .size(14.dp)

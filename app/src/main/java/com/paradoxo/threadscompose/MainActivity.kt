@@ -252,6 +252,9 @@ class MainActivity : ComponentActivity() {
                 state = state,
                 onNavigateToInstagram = {
                     navigateToInstagram()
+                },
+                onBack = {
+                    navController.popBackStack()
                 }
             )
         }
@@ -327,9 +330,10 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun NavGraphBuilder.homeGraph(
+        state: State<SessionState>,
         onNavigateToInstagram: () -> Unit = {},
-        paddingValues: PaddingValues = PaddingValues(0.dp),
-        state: State<SessionState>
+        onBack: () -> Unit = {},
+        paddingValues: PaddingValues = PaddingValues(0.dp)
 
     ) {
         navigation(
@@ -339,14 +343,34 @@ class MainActivity : ComponentActivity() {
             composable(Destiny.Feed.route) {
                 val postViewModel: FeedViewModel = viewModel()
                 val postState by postViewModel.uiState.collectAsState()
+
                 FeedScreen(posts = postState.posts)
             }
             composable(Destiny.Search.route) { SearchScreen() }
-            composable(Destiny.Post.route) { PostScreen() }
+            composable(Destiny.Post.route) {
+                PostScreen(
+                    currentUser = state.value.userAccount,
+                    onBack = {
+                        onBack()
+                    },
+                    onSendPost = { posts ->
+                        val postFirestore = PostFirestore()
+                        postFirestore.insertPost(
+                            posts = posts,
+                            onSuccess = {
+                                onBack()
+                            },
+                            onError = {
+                                onBack()
+                            }
+                        )
+                    }
+                )
+            }
             composable(Destiny.Notifications.route) { NotificationsScreen() }
             composable(Destiny.Profile.route) {
                 ProfileScreen(
-                    userAccount = state.value.userAccount,
+                    currentUser = state.value.userAccount,
                     modifier = Modifier.padding(paddingValues),
                     onNavigateToInstagram = {
                         onNavigateToInstagram()

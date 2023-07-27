@@ -52,14 +52,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.paradoxo.threadscompose.R
+import com.paradoxo.threadscompose.model.Post
 import com.paradoxo.threadscompose.model.UserAccount
 import com.paradoxo.threadscompose.sampleData.SampleData
+import com.paradoxo.threadscompose.utils.getCurrentTime
 import com.paradoxo.threadscompose.utils.showMessage
 
 @Composable
-fun PostScreen(modifier: Modifier = Modifier) {
-    val currentUser = SampleData().userAccounts[0]
-
+internal fun PostScreen(
+    modifier: Modifier = Modifier,
+    currentUser: UserAccount,
+    onSendPost: (List<Post>) -> Unit = {},
+    onBack: () -> Unit = {}
+) {
     val posts = mutableListOf(
         PostScreenState(
             currentUser, "", "",
@@ -74,7 +79,7 @@ fun PostScreen(modifier: Modifier = Modifier) {
     Scaffold(
         modifier = modifier,
         topBar = {
-            PostScreenAppBar()
+            PostScreenAppBar(onBack = onBack)
         }
     ) { paddingValues ->
         Column(
@@ -191,7 +196,9 @@ fun PostScreen(modifier: Modifier = Modifier) {
                     modifier = Modifier
                         .clickable(enabled = canAddNewPost) {
                             context.showMessage("Publicar a line!")
+                            onSendPost(posts.map { it.toPost() })
                         }
+                        .padding(16.dp)
                 )
             }
 
@@ -212,6 +219,10 @@ private fun EditPostItem(
 
     var editTextState by remember {
         mutableStateOf(postState.content)
+    }
+
+    LaunchedEffect(editTextState){
+        postState.content = editTextState
     }
 
     val isFirstPost = postState.isFirstPost
@@ -356,11 +367,13 @@ private fun EditPostItem(
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun PostScreenAppBar() {
+private fun PostScreenAppBar(
+    onBack: () -> Unit = {}
+) {
     TopAppBar(
         navigationIcon = {
             Row {
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = { onBack() }) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close"
@@ -380,7 +393,9 @@ private fun PostScreenAppBar() {
 @Preview(showBackground = true)
 @Composable
 fun PostScreenPreview() {
-    PostScreen()
+    PostScreen(
+        currentUser = SampleData().generateSampleInvitedUser()
+    )
 }
 
 @Preview(showBackground = true)
@@ -398,7 +413,17 @@ fun EditPostItemPreview() {
 
 internal data class PostScreenState(
     val userAccount: UserAccount,
-    val content: String,
+    var content: String,
     val date: String,
     val isFirstPost: Boolean = false
-)
+) {
+    fun toPost() = Post(
+        userAccount = userAccount,
+        date = getCurrentTime(),
+        description = content,
+        medias = emptyList(),
+        likes = emptyList(),
+        comments = emptyList(),
+    )
+
+}
