@@ -11,12 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -32,8 +27,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModel
@@ -262,15 +258,32 @@ class MainActivity : ComponentActivity() {
                 if (showNavigationBar) {
                     NavigationBar {
                         screenItems.forEach { screen ->
+                            val isSelected =
+                                currentDestination?.hierarchy?.any { it.route == screen.route } == true
+
                             NavigationBarItem(
                                 icon = {
                                     screen.resourceId?.let { assetIcon ->
+                                        val icon = painterResource(
+                                            id = if (isSelected) {
+                                                assetIcon.first
+                                            } else {
+                                                assetIcon.second
+                                            },
+                                        )
+
+
                                         Icon(
-                                            assetIcon, contentDescription = null
+                                            icon,
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                                .alpha(
+                                                    if (isSelected) 1f else 0.5f
+                                                )
                                         )
                                     }
                                 },
-                                selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                                selected = isSelected,
                                 onClick = {
                                     if (screen.route == Destiny.Post.route) {
                                         navController.navigate(screen.route) {
@@ -479,13 +492,17 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    sealed class Destiny(val route: String, val resourceId: ImageVector? = null) {
-        object Login : Destiny("login", Icons.Default.Person)
-        object Feed : Destiny("feed", Icons.Default.Home)
-        object Search : Destiny("search", Icons.Default.Search)
-        object Post : Destiny("post", Icons.Default.Send)
-        object Notifications : Destiny("notifications", Icons.Default.Favorite)
-        object Profile : Destiny("profile", Icons.Default.Person)
+    sealed class Destiny(val route: String, val resourceId: Pair<Int, Int>? = null) {
+        object Login : Destiny("login")
+        object Feed : Destiny("feed", Pair(R.drawable.ic_home, R.drawable.ic_home_outlined))
+        object Search : Destiny("search", Pair(R.drawable.ic_search, R.drawable.ic_search))
+        object Post : Destiny("post", Pair(R.drawable.ic_post, R.drawable.ic_post))
+        object Notifications :
+            Destiny("notifications", Pair(R.drawable.ic_heart, R.drawable.ic_heart_outlined))
+
+        object Profile :
+            Destiny("profile", Pair(R.drawable.ic_profile, R.drawable.ic_profile_outlined))
+
         object ProfileEdit : Destiny("profileEdit")
 
         object LoginNavigation : Destiny("loginNavigation")

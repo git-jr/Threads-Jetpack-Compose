@@ -20,11 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -132,7 +128,7 @@ fun PostItem(
                 if (hasMedia) {
                     Row(
                         modifier = Modifier
-                            .height(height = 100.dp)
+                            .height(height = 200.dp)
                             .fillMaxWidth()
                     ) {
                         LazyRow(
@@ -168,7 +164,7 @@ fun PostItem(
                     Modifier.padding(vertical = 8.dp),
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Favorite,
+                        painterResource(id = R.drawable.ic_heart),
                         contentDescription = "like",
                         modifier = Modifier.clickable {
                             onLikeClick(post.id)
@@ -178,19 +174,19 @@ fun PostItem(
 
                     Spacer(modifier = Modifier.width(10.dp))
                     Icon(
-                        imageVector = Icons.Default.MailOutline,
+                        painterResource(id = R.drawable.ic_comment),
                         contentDescription = "comment"
                     )
 
                     Spacer(modifier = Modifier.width(10.dp))
                     Icon(
-                        imageVector = Icons.Default.Share,
+                        painterResource(id = R.drawable.ic_repost),
                         contentDescription = "retweet"
                     )
 
                     Spacer(modifier = Modifier.width(10.dp))
                     Icon(
-                        imageVector = Icons.Default.Send,
+                        painterResource(id = R.drawable.ic_send),
                         contentDescription = "share"
                     )
                 }
