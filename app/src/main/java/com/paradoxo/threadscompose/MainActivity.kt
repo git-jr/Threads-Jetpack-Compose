@@ -3,51 +3,37 @@ package com.paradoxo.threadscompose
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.Transition
-import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.gestures.animateTo
-import androidx.compose.foundation.gestures.animateZoomBy
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.awaitVerticalDragOrCancellation
-import androidx.compose.foundation.gestures.awaitVerticalTouchSlopOrCancellation
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
-import androidx.compose.foundation.gestures.rememberTransformableState
-import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.Button
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -58,7 +44,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -67,20 +52,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -94,7 +75,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
-import coil.compose.AsyncImage
 import com.facebook.Profile
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -117,7 +97,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlin.math.max
 import kotlin.math.roundToInt
 
 
@@ -127,32 +106,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        val testMode = true
+        val testMode = false
 
         if (testMode) {
             setContent {
-                Box(
-                    Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-
-                    Box {
-                        VerticalDraggableSample(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .align(Alignment.Center)
-                        )
-                    }
-
-//                GestureAnimationExample()
-//                    DraggableText()
-//                    TestAnim1()
-//                    TestAnim2()
-//                    TestAnim3()
-
-//                    TestDragAndDrop()
-
-//                    GestureAnimationExampleOk()
+                Box {
+                    FeedScreen(posts = SampleData().posts)
                 }
             }
         } else {
@@ -517,396 +476,27 @@ data class SessionState(
     var userAccount: UserAccount = UserAccount(),
 )
 
-
-private enum class ComponentState { Pressed, Released }
-
-@Composable
-private fun GestureAnimationExample() {
-    var useRed by remember { mutableStateOf(false) }
-    var toState by remember { mutableStateOf(ComponentState.Released) }
-    var coords by remember { mutableStateOf("") }
-    val modifier = Modifier.pointerInput(Unit) {
-        detectTapGestures(
-            onPress = {
-                coords = "x= ${it.x} y= ${it.y}"
-                toState = ComponentState.Pressed
-                tryAwaitRelease()
-                toState = ComponentState.Released
-            })
-    }
-
-    val transition: Transition<ComponentState> = updateTransition(targetState = toState, label = "")
-    val scale: Float by transition.animateFloat(
-        transitionSpec = { spring(stiffness = 50f) }, label = ""
-    ) { state ->
-        if (state == ComponentState.Pressed) 3f else 1f
-    }
-
-    val color: Color by transition.animateColor(
-        transitionSpec = {
-            if (this.initialState == ComponentState.Pressed
-                && this.targetState == ComponentState.Released
-            ) {
-                spring(stiffness = 50f)
-            } else {
-                tween(durationMillis = 500)
-            }
-        }, label = ""
-    ) { state ->
-        when (state) {
-            ComponentState.Pressed -> MaterialTheme.colorScheme.primary
-            ComponentState.Released -> if (useRed) Color.Red else MaterialTheme.colorScheme.secondary
-        }
-    }
-    Column {
-        Button(
-            modifier = Modifier
-                .padding(10.dp)
-                .align(Alignment.CenterHorizontally),
-            onClick = { useRed = !useRed }
-        ) {
-            Text(coords)
-        }
-        Box(
-            modifier
-                .fillMaxSize()
-                .wrapContentSize(Alignment.Center)
-                .requiredSize((100 * scale).dp)
-                .background(color)
-        )
-    }
-}
-
-
-@Composable
-private fun GestureAnimationExampleOk() {
-    val offsetY = remember { mutableStateOf(0f) }
-
-
-    var useRed by remember { mutableStateOf(false) }
-    var toState by remember { mutableStateOf(ComponentState.Released) }
-    val modifier = Modifier.pointerInput(Unit) {
-        detectTapGestures(onPress = {
-            Log.i("GestureAnimati", "onPress y = ${it.y} x = ${it.x}")
-            toState = ComponentState.Pressed
-            tryAwaitRelease()
-            toState = ComponentState.Released
-        })
-    }
-
-    val transition: Transition<ComponentState> = updateTransition(targetState = toState, label = "")
-    val scale: Float by transition.animateFloat(
-        transitionSpec = { spring(stiffness = 50f) }, label = ""
-    ) { state ->
-        if (state == ComponentState.Pressed) 3f else 1f
-    }
-
-
-    val color: Color by transition.animateColor(
-        transitionSpec = {
-            if (this.initialState == ComponentState.Pressed
-                && this.targetState == ComponentState.Released
-            ) {
-                spring(stiffness = 50f)
-            } else {
-                tween(durationMillis = 500)
-            }
-        }, label = ""
-    ) { state ->
-        when (state) {
-            ComponentState.Pressed -> MaterialTheme.colorScheme.primary
-            ComponentState.Released -> if (useRed) Color.Red else MaterialTheme.colorScheme.secondary
-        }
-    }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .offset(0.dp, offsetY.value.dp)
-            .pointerInput(Unit) {
-                detectVerticalDragGestures { _, dragAmount ->
-                    val originalY = offsetY.value
-                    val newValue = (originalY + dragAmount).coerceIn(0f, 1000f)
-                    offsetY.value = newValue
-                }
-            }
-
-    ) {
-
-        Text(
-            text = "Scale: ${scale}", fontSize = 20.sp,
-            modifier = Modifier
-                .padding(10.dp)
-                .align(Alignment.CenterHorizontally)
-        )
-
-        Button(
-            modifier = Modifier
-                .padding(10.dp)
-                .align(Alignment.CenterHorizontally)
-//                .pointerInput(Unit) {
-//                    detectVerticalDragGestures { _, dragAmount ->
-//                        val originalY = offsetY.value
-//                        val newValue = (originalY + dragAmount).coerceIn(0f, 1000f)
-//                        offsetY.value = newValue
-//                    }
-//                }
-            ,
-            onClick = { useRed = !useRed }
-        ) {
-            Text("Coordenada: ${offsetY.value}")
-        }
-        Box(
-            modifier
-                .fillMaxSize()
-                .wrapContentSize(Alignment.Center)
-//                .requiredSize((100 * scale).dp)
-                .background(color)
-                .offset((100 * scale).dp)
-        )
-    }
-}
-
-@Composable
-private fun DraggableText() {
-    var offsetY by remember { mutableFloatStateOf(0f) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.LightGray)
-            //.offset { IntOffset(offsetY.roundToInt(), 0) }
-            .draggable(
-                orientation = Orientation.Vertical,
-                state = rememberDraggableState { delta ->
-                    offsetY += delta
-                }
-            ),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-
-        Text(
-            text = "Coordenada: $offsetY",
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontSize = 20.sp
-            ),
-        )
-    }
-}
-
-@Composable
-fun TestDragAndDrop() {
-    val offsetX = remember { mutableStateOf(80f) }
-    val offsetY = remember { mutableStateOf(0f) }
-    var height by remember { mutableStateOf(0f) }
-
-    var toState by remember { mutableStateOf(ComponentState.Released) }
-
-    LaunchedEffect(offsetY) {
-        if (toState == ComponentState.Pressed) {
-            Log.i("TestDragAndDrop", "Pressed")
-            offsetY.value = offsetY.value
-        } else {
-            Log.i("TestDragAndDrop", "Released")
-            offsetY.value = 0f
-        }
-    }
-
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(Color.LightGray)
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onPress = {
-                        toState = ComponentState.Pressed
-                        tryAwaitRelease()
-                        toState = ComponentState.Released
-                    })
-            },
-    ) {
-
-        AsyncImage(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .clipToBounds()
-                .onSizeChanged { height = it.height.toFloat() },
-            model = R.drawable.profile_pic_emoji_1,
-            contentDescription = null,
-        )
-
-        Box(
-            Modifier
-                .offset { IntOffset(offsetX.value.roundToInt(), offsetY.value.roundToInt()) }
-                .fillMaxWidth()
-                .height(50.dp)
-                .background(Color.Blue)
-                .pointerInput(Unit) {
-                    detectVerticalDragGestures { _, dragAmount ->
-                        val originalY = offsetY.value
-                        val newValue =
-                            (originalY + dragAmount).coerceIn(0f, height - 50.dp.toPx())
-                        offsetY.value = newValue
-                    }
-                }
-        )
-
-        Text(
-            text = "Coordenada: ${offsetY.value}", fontSize = 20.sp,
-            modifier = Modifier
-                .padding(10.dp)
-                .align(Alignment.CenterHorizontally)
-        )
-    }
-}
-
-@Composable
-fun TestAnim1() {
-    val offsetX = remember { mutableStateOf(0f) }
-    val offsetY = remember { mutableStateOf(0f) }
-    var height by remember { mutableStateOf(0f) }
-    Box(
-        Modifier
-            .fillMaxSize()
-            .onSizeChanged { height = it.height.toFloat() }
-    ) {
-        Box(
-            Modifier
-                .offset { IntOffset(offsetX.value.roundToInt(), offsetY.value.roundToInt()) }
-                .fillMaxWidth()
-                .height(50.dp)
-                .background(Color.Blue)
-                .pointerInput(Unit) {
-                    awaitEachGesture {
-                        val down = awaitFirstDown()
-                        var change =
-                            awaitVerticalTouchSlopOrCancellation(down.id) { change, over ->
-                                val originalY = offsetY.value
-                                val newValue = (originalY + over)
-                                    .coerceIn(0f, height - 50.dp.toPx())
-                                change.consume()
-                                offsetY.value = newValue
-                            }
-                        while (change != null && change.pressed) {
-                            change = awaitVerticalDragOrCancellation(change.id)
-                            if (change != null && change.pressed) {
-                                val originalY = offsetY.value
-                                val newValue = (originalY + change.positionChange().y)
-                                    .coerceIn(0f, height - 50.dp.toPx())
-                                change.consume()
-                                offsetY.value = newValue
-                            }
-                        }
-                    }
-                }
-        )
-    }
-}
-
-@Composable
-fun TestAnim2() {
-    val offsetX = remember { mutableStateOf(0f) }
-    val offsetY = remember { mutableStateOf(0f) }
-    var height by remember { mutableStateOf(0f) }
-    Box(
-        Modifier
-            .fillMaxSize()
-            .onSizeChanged { height = it.height.toFloat() }
-    ) {
-        Box(
-            Modifier
-                .offset { IntOffset(offsetX.value.roundToInt(), offsetY.value.roundToInt()) }
-                .fillMaxWidth()
-                .height(50.dp)
-                .background(Color.Blue)
-                .pointerInput(Unit) {
-                    detectVerticalDragGestures { _, dragAmount ->
-                        val originalY = offsetY.value
-                        val newValue = (originalY + dragAmount).coerceIn(0f, height - 50.dp.toPx())
-                        offsetY.value = newValue
-                    }
-                }
-        )
-    }
-}
-
-
-@Composable
-fun TestAnim3() {
-    Box(
-        Modifier
-            .size(200.dp)
-            .clipToBounds()
-            .background(Color.LightGray)
-    ) {
-        // set up all transformation states
-        var scale by remember { mutableStateOf(1f) }
-        var rotation by remember { mutableStateOf(0f) }
-        var offset by remember { mutableStateOf(Offset.Zero) }
-        val coroutineScope = rememberCoroutineScope()
-        // let's create a modifier state to specify how to update our UI state defined above
-        val state = rememberTransformableState { zoomChange, offsetChange, rotationChange ->
-            // note: scale goes by factor, not an absolute difference, so we need to multiply it
-            // for this example, we don't allow downscaling, so cap it to 1f
-            scale = max(scale * zoomChange, 1f)
-            rotation += rotationChange
-            offset += offsetChange
-        }
-        Box(
-            Modifier
-                // apply pan offset state as a layout transformation before other modifiers
-                .offset { IntOffset(offset.x.roundToInt(), offset.y.roundToInt()) }
-                // add transformable to listen to multitouch transformation events after offset
-                .transformable(state = state)
-                // optional for example: add double click to zoom
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onDoubleTap = {
-                            coroutineScope.launch { state.animateZoomBy(4f) }
-                        }
-                    )
-                }
-                .fillMaxSize()
-                .border(1.dp, Color.Green),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                "\uD83C\uDF55",
-                fontSize = 32.sp,
-                // apply other transformations like rotation and zoom on the pizza slice emoji
-                modifier = Modifier.graphicsLayer {
-                    scaleX = scale
-                    scaleY = scale
-                    rotationZ = rotation
-                }
-            )
-        }
-    }
-}
-
-
-// 29/07/2023
 enum class DragAnchors(val fraction: Float) {
     Start(.050f),
     End(.5f),
 }
 
+@Composable
+private fun DraggableContent(
+    modifier: Modifier = Modifier,
+) {
+    Spacer(modifier = modifier)
+}
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun VerticalDraggableSample(
+private fun VerticalDraggableSampleTest(
     modifier: Modifier = Modifier,
 ) {
-    var imageSize by remember {
-        mutableStateOf(0.dp)
-    }
-
-    var currentPosition by remember {
-        mutableStateOf(0.dp)
-    }
-
     val minHeightImage = 32.dp
+    var imageSize by remember { mutableStateOf(0.dp) }
+    var currentPosition by remember { mutableStateOf(0.dp) }
 
     val density = LocalDensity.current
     val positionalThreshold = { distance: Float -> distance * 0.5f }
@@ -927,12 +517,21 @@ fun VerticalDraggableSample(
             animationSpec = animationSpec,
         )
     }
-    val contentSize = 80.dp
-    val contentSizePx = with(density) { contentSize.toPx() }
+//    val contentSize = 80.dp
+//    val contentSizePx = with(density) { contentSize.toPx() }
+
+
+    // Quando o arrastar chegar no final, volta pa o inicio com uma animação
+    if (state.currentValue == DragAnchors.End) {
+        LaunchedEffect(Unit) {
+            state.animateTo(DragAnchors.Start)
+        }
+    }
+
     Box(
         modifier
             .onSizeChanged { layoutSize ->
-                val dragEndPoint = layoutSize.height - contentSizePx
+                val dragEndPoint = layoutSize.height
                 state.updateAnchors(
                     DraggableAnchors {
                         DragAnchors
@@ -946,7 +545,7 @@ fun VerticalDraggableSample(
     ) {
         DraggableContent(
             modifier = Modifier
-                .size(contentSize)
+                .fillMaxSize()
                 .offset {
                     val intOffset = IntOffset(
                         x = 0,
@@ -974,122 +573,283 @@ fun VerticalDraggableSample(
                 .align(Alignment.CenterHorizontally)
         )
 
-        Column(
-            Modifier.fillMaxHeight(),
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "Teste: newSize = $imageSize",
-                fontSize = 24.sp,
-                textAlign = TextAlign.Center,
+    }
+}
+
+
+@Composable
+private fun VerticalDraggableSampleTest1(
+    modifier: Modifier = Modifier
+) {
+    val maxHeightImage = 200.dp
+    val defaultSizeImage = 72.dp
+    val coroutineScope = rememberCoroutineScope()
+    val animatedImageSize = remember { Animatable(defaultSizeImage.value) }
+
+    LazyColumn(
+        modifier = modifier.fillMaxSize()
+    ) {
+        item {
+            Box(
                 modifier = Modifier
-                    .padding(10.dp)
-                    .fillMaxWidth()
+                    .pointerInput(Unit) {
+                        detectVerticalDragGestures(
+                            onVerticalDrag = { change, offset ->
+                                coroutineScope.launch {
+                                    val newSize =
+                                        (animatedImageSize.value + offset / 8).coerceAtLeast(
+                                            defaultSizeImage.value
+                                        )
+                                    if (newSize < maxHeightImage.value) {
+                                        animatedImageSize.snapTo(newSize)
+                                    }
+                                    change.consume()
+                                }
+                            },
+                            onDragEnd = {
+                                coroutineScope.launch {
+                                    animatedImageSize.animateTo(
+                                        defaultSizeImage.value,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioLowBouncy,
+                                            stiffness = Spring.StiffnessLow
+                                        )
+                                    )
+                                }
+                            }
+                        )
+                    }
+                    .onGloballyPositioned {
+//                        if (it.positionInParent().y == 0f) { // Check if the top of the box is visible
+//                            // Animate back to default size
+//                            coroutineScope.launch {
+//                                animatedImageSize.animateTo(
+//                                    defaultSizeImage.value,
+//                                    animationSpec = spring(
+//                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+//                                        stiffness = Spring.StiffnessLow
+//                                    )
+//                                )
+//                            }
+//                        }
+                    }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
 
-            )
-            Text(
-                text = "position = $currentPosition - contentSizePx = ${state.currentValue}",
-                fontSize = 24.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .padding(10.dp)
-                    .fillMaxWidth()
-
-            )
-        }
-
-        // Quando o arrastar chegar no final, volta pa o inicio com uma animação
-        if (state.currentValue == DragAnchors.End) {
-            LaunchedEffect(Unit) {
-                state.animateTo(DragAnchors.Start)
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_logo_colors),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(animatedImageSize.value.dp)
+                            .fillMaxWidth()
+                    )
+                }
             }
         }
+
+        items(100) { index ->
+            Text(text = "Item $index")
+        }
     }
 }
 
 @Composable
-fun DraggableContent(
+private fun VerticalDraggableSampleTest2(
     modifier: Modifier = Modifier,
 ) {
-    Image(
-        painter = painterResource(id = R.drawable.profile_pic_emoji_3),
-        modifier = modifier,
-        contentDescription = null,
-    )
-}
+    val defaultSizeImage = 72.dp // Define o tamanho específico que a imagem deve retornar
 
+    var imageSize by remember { mutableStateOf(defaultSizeImage) }
+    val coroutineScope = rememberCoroutineScope()
 
-enum class DragAnchorsOkButCanBetter(val fraction: Float) {
-    Start(0f),
-    OneQuarter(.25f),
-    Half(.5f),
-    ThreeQuarters(.75f),
-    End(1f),
-}
+    val draggableState = remember {
+        mutableStateOf(imageSize)
+    }
+    val animatedOffsetY = remember {
+        Animatable(0f)
+    }
 
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun VerticalDraggableSampleOkButCanBetter(
-    modifier: Modifier = Modifier,
-) {
-    val density = LocalDensity.current
-    val positionalThreshold = { distance: Float -> distance * 0.5f }
-    val velocityThreshold = { with(density) { 100.dp.toPx() } }
-    val animationSpec = tween<Float>()
-    val state = rememberSaveable(
-        density,
-        saver = AnchoredDraggableState.Saver(
-            animationSpec = animationSpec,
-            positionalThreshold = positionalThreshold,
-            velocityThreshold = velocityThreshold,
-        )
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTransformGestures { _, _, zoom, _ ->
+                    coroutineScope.launch {
+                        // Scaling imageSize based on zoom
+                        draggableState.value =
+                            (draggableState.value * zoom).coerceAtLeast(defaultSizeImage)
+                    }
+                }
+            }
+            .verticalScroll(rememberScrollState())
     ) {
-        AnchoredDraggableState(
-            initialValue = DragAnchorsOkButCanBetter.Half,
-            positionalThreshold = positionalThreshold,
-            velocityThreshold = velocityThreshold,
-            animationSpec = animationSpec,
-        )
+        item {
+            Image(
+                painter = painterResource(id = R.drawable.ic_logo_colors),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(imageSize)
+                    .fillMaxWidth()
+//                    .align(Alignment.CenterHorizontally)
+            )
+        }
+        items(100) { index ->
+// Your list items
+            Text(text = "Item $index")
+        }
     }
-    val contentSize = 80.dp
-    val contentSizePx = with(density) { contentSize.toPx() }
+
+// Handling drag gestures
     Box(
-        modifier
-            .onSizeChanged { layoutSize ->
-                val dragEndPoint = layoutSize.height - contentSizePx
-                state.updateAnchors(
-                    DraggableAnchors {
-                        DragAnchorsOkButCanBetter
-                            .values()
-                            .forEach { anchor ->
-                                anchor at dragEndPoint * anchor.fraction
-                            }
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .pointerInput(Unit) {
+                detectVerticalDragGestures(
+                    onDragEnd = {
+                        imageSize = defaultSizeImage
+                        // Animação para retornar a imagem ao tamanho desejado quando soltar
+//                        coroutineScope.launch {
+//                            animatedOffsetY.animateTo(
+//                                targetValue = 0f,
+//                                animationSpec = spring(
+//                                    dampingRatio = Spring.DampingRatioMediumBouncy, // Amortecimento
+//                                    stiffness = Spring.StiffnessLow // Rigidez
+//                                )
+//                            )
+//                            imageSize = defaultSizeImage
+//                        }
+                    },
+                    onVerticalDrag = { change, offset ->
+                        coroutineScope.launch {
+                            val newSize =
+                                (imageSize + (offset / 8).dp).coerceAtLeast(defaultSizeImage)
+                            animatedOffsetY.snapTo(offset)
+                            imageSize = newSize
+                            change.consumeAllChanges()
+                        }
                     }
                 )
+            }
+            .onGloballyPositioned { layoutCoordinates ->
+                val layoutHeight = layoutCoordinates.size.height.toFloat()
+                val dragHeight = animatedOffsetY.value
+
+                // Scaling imageSize based on drag height
+                imageSize =
+                    (defaultSizeImage + (dragHeight / 8).dp).coerceIn(
+                        defaultSizeImage,
+                        layoutHeight.dp
+                    )
             }
     ) {
         DraggableContent(
             modifier = Modifier
-                .size(contentSize)
-                .offset {
-                    IntOffset(
-                        x = 0,
-                        y = state
-                            .requireOffset()
-                            .roundToInt(),
-                    )
-                }
-                .anchoredDraggable(state, Orientation.Vertical),
+                .fillMaxSize()
+                .offset { IntOffset(0, animatedOffsetY.value.roundToInt()) }
         )
     }
-
-    Text(
-        text = "Teste: ${positionalThreshold.invoke(100f)}",
-        fontSize = 24.sp,
-        textAlign = TextAlign.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-
-    )
 }
+
+@Composable
+private fun VerticalDraggableSampleTest3(
+    modifier: Modifier = Modifier,
+) {
+    val defaultSizeImage = 72.dp // Define o tamanho específico que a imagem deve retornar
+
+    var imageSize by remember { mutableStateOf(defaultSizeImage) }
+    val coroutineScope = rememberCoroutineScope()
+
+    val draggableState = remember {
+        mutableStateOf(imageSize)
+    }
+    val animatedOffsetY = remember {
+        Animatable(0f)
+    }
+
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTransformGestures { _, _, zoom, _ ->
+                    coroutineScope.launch {
+                        // Scaling imageSize based on zoom
+                        draggableState.value =
+                            (draggableState.value * zoom).coerceAtLeast(defaultSizeImage)
+                    }
+                }
+            }
+    ) {
+        item {
+            Image(
+                painter = painterResource(id = R.drawable.ic_logo_colors),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(imageSize)
+                    .fillMaxWidth()
+//                    .align(Alignment.CenterHorizontally)
+            )
+        }
+        items(100) { index ->
+            // Your list items
+            Text(text = "Item $index")
+        }
+    }
+
+    // Handling drag gestures
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .pointerInput(Unit) {
+                detectVerticalDragGestures(
+                    onDragEnd = {
+                        imageSize = defaultSizeImage
+                        // Animação para retornar a imagem ao tamanho desejado quando soltar
+//                        coroutineScope.launch {
+//                            animatedOffsetY.animateTo(
+//                                targetValue = 0f,
+//                                animationSpec = spring(
+//                                    dampingRatio = Spring.DampingRatioMediumBouncy, // Amortecimento
+//                                    stiffness = Spring.StiffnessLow // Rigidez
+//                                )
+//                            )
+//                            imageSize = defaultSizeImage
+//                        }
+                    },
+                    onVerticalDrag = { change, offset ->
+                        coroutineScope.launch {
+                            val newSize =
+                                (imageSize + (offset / 8).dp).coerceAtLeast(defaultSizeImage)
+                            animatedOffsetY.snapTo(offset)
+                            imageSize = newSize
+                            change.consumeAllChanges()
+                        }
+                    }
+                )
+            }
+            .onGloballyPositioned { layoutCoordinates ->
+                val layoutHeight = layoutCoordinates.size.height.toFloat()
+                val dragHeight = animatedOffsetY.value
+
+                // Scaling imageSize based on drag height
+                imageSize =
+                    (defaultSizeImage + (dragHeight / 8).dp).coerceIn(
+                        defaultSizeImage,
+                        layoutHeight.dp
+                    )
+            }
+    ) {
+        DraggableContent(
+            modifier = Modifier
+                .fillMaxSize()
+                .offset { IntOffset(0, animatedOffsetY.value.roundToInt()) }
+        )
+    }
+}
+
+
