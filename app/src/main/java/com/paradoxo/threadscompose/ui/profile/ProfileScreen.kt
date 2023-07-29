@@ -371,6 +371,10 @@ fun ProfileScreen(
                     PostItem(reply)
                 }
             }
+
+            item {
+                Spacer(modifier = Modifier.height(56.dp))
+            }
         }
 
     }

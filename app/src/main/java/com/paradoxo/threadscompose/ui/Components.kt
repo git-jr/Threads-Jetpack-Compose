@@ -192,7 +192,7 @@ fun PostItem(
                 }
             }
         }
-        if (commentsSize > 0 || likesSize > 0) {
+        if (commentsSize > 0) {
             Row(
                 Modifier
                     .fillMaxWidth(),

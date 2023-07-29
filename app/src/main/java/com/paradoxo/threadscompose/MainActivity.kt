@@ -11,10 +11,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -201,7 +202,9 @@ class MainActivity : ComponentActivity() {
         } else {
             setContent {
                 ThreadsComposeTheme {
-                    Box(Modifier.fillMaxSize()) {
+                    Box(
+                        Modifier.fillMaxSize()
+                    ) {
                         val navController: NavHostController = rememberNavController()
 
                         var showNavigationBar by remember { mutableStateOf(false) }
@@ -256,7 +259,9 @@ class MainActivity : ComponentActivity() {
         Scaffold(
             bottomBar = {
                 if (showNavigationBar) {
-                    NavigationBar {
+                    NavigationBar(
+                        containerColor = Color.White,
+                    ) {
                         screenItems.forEach { screen ->
                             val isSelected =
                                 currentDestination?.hierarchy?.any { it.route == screen.route } == true
@@ -299,7 +304,10 @@ class MainActivity : ComponentActivity() {
                                             restoreState = true
                                         }
                                     }
-                                }
+                                },
+                                colors = NavigationBarItemDefaults.colors(
+                                    indicatorColor = Color.White
+                                )
                             )
                         }
                     }
@@ -365,7 +373,6 @@ class MainActivity : ComponentActivity() {
             )
         }
     }
-
 
     private fun NavGraphBuilder.loginGraph(
         onNavigateToHome: (UserAccount) -> Unit = {},
@@ -440,7 +447,6 @@ class MainActivity : ComponentActivity() {
         onNavigateToInstagram: () -> Unit = {},
         onBack: () -> Unit = {},
         paddingValues: PaddingValues = PaddingValues(0.dp)
-
     ) {
         navigation(
             startDestination = Destiny.Feed.route,
