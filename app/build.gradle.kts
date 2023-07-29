@@ -74,6 +74,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.foundation)
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.coil.compose)
