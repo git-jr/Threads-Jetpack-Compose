@@ -1,16 +1,5 @@
 package com.paradoxo.threadscompose.model
 
-
-enum class NotificationType {
-    All,
-    Comment,
-    Mention,
-    Follow,
-    Like,
-    Verified,
-}
-
-
 data class Notification(
     val id: String = "",
     val title: String = "",
@@ -18,6 +7,15 @@ data class Notification(
     val image: Int = 0,
     val time: String = "",
     val extraContent: String? = null,
-    val type: NotificationType = NotificationType.Follow,
+    val type: NotificationTypeEnum = NotificationTypeEnum.Follow,
     var isFollowing: Boolean = false,
 )
+
+enum class NotificationTypeEnum {
+    All,
+    Comment,
+    Mention,
+    Follow,
+    Like,
+    Verified,
+}

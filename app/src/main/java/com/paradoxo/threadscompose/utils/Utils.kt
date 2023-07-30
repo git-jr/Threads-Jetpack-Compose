@@ -1,7 +1,5 @@
 package com.paradoxo.threadscompose.utils
 
-import android.content.Context
-import android.widget.Toast
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -26,9 +24,4 @@ fun formatTimeElapsed(start: Long, end: Long): String {
         elapsedSeconds < secondsInMonth * 12 -> "${elapsedSeconds / secondsInMonth} m"
         else -> "${elapsedSeconds / (secondsInMonth * 12)} a"
     }
-}
-
-
-fun Context.showMessage(message: String) {
-    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 }

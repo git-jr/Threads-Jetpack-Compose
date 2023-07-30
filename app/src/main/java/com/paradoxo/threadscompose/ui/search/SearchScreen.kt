@@ -1,4 +1,4 @@
-package com.paradoxo.threadscompose.ui
+package com.paradoxo.threadscompose.ui.search
 
 import android.view.ViewTreeObserver
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -41,7 +41,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -139,7 +138,6 @@ fun SearchScreen(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun SearchBar(
     modifier: Modifier = Modifier,

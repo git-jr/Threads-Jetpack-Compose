@@ -2,14 +2,12 @@ package com.paradoxo.threadscompose.network.firebase
 
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.paradoxo.threadscompose.model.Comment
 import com.paradoxo.threadscompose.model.Post
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.UUID
 
 class PostFirestore {
@@ -24,6 +22,7 @@ class PostFirestore {
     ) {
         dbPosts
             .whereEqualTo("mainPost", true)
+            .orderBy("date", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener {
                 val posts = it.toObjects(Post::class.java)
@@ -36,29 +35,32 @@ class PostFirestore {
             }
     }
 
-
-    suspend fun insertPost(
+    fun savePost(
         posts: List<Post>,
         onSuccess: () -> Unit = {},
         onError: () -> Unit = {},
     ) {
         if (posts.size > 1) {
-            saveThread(posts, onSuccess, onError)
+            savePostThread(posts, onSuccess, onError)
         } else {
+            val post = posts.first().copy(
+                id = UUID.randomUUID().toString(),
+                mainPost = true
+            )
             dbPosts.document()
-                .set(posts)
+                .set(post)
                 .addOnSuccessListener {
                     onSuccess()
-                    Log.i("insertPost", "Post inserido com sucesso")
+                    Log.i("savePost", "Post salvo com sucesso")
                 }
                 .addOnFailureListener {
                     onError()
-                    Log.i("insertPost", "Erro ao inserir post ${it.message}")
+                    Log.i("savePost", "Erro ao salvar post ${it.message}")
                 }
         }
     }
 
-    private fun saveThread(
+    private fun savePostThread(
         posts: List<Post>,
         onSuccess: () -> Unit,
         onError: () -> Unit
@@ -70,7 +72,7 @@ class PostFirestore {
         CoroutineScope(IO).launch {
             try {
                 postsInThreadFormat.forEach { post ->
-                    val urls = mediaFirebaseStorage.uploadMediaOk(post.medias)
+                    val urls = mediaFirebaseStorage.uploadMedia(post.medias)
                     val newPost = post.copy(medias = urls)
                     val documentReference = dbPosts.document()
                     batch.set(documentReference, newPost)
@@ -79,44 +81,16 @@ class PostFirestore {
                 batch.commit()
                     .addOnSuccessListener {
                         onSuccess()
-                        Log.i("insertPost", "Post inserido com sucesso")
+                        Log.i("savePostThread", "Thread salvo com sucesso")
                     }
                     .addOnFailureListener {
                         onError()
-                        Log.i("insertPost", "Erro ao inserir post ${it.message}")
+                        Log.i("savePostThread", "Erro ao salvar Thread ${it.message}")
                     }
             } catch (e: Exception) {
-                Log.e("saveThread", "Error uploading media: ${e.message}")
+                Log.e("savePostThread", "Erro ao salvar Thread ${e.message}")
             }
         }
-    }
-
-
-
-
-    private fun saveThreadOld(
-        posts: List<Post>,
-        onSuccess: () -> Unit,
-        onError: () -> Unit
-    ) {
-        val batch = firebaseFirestore.batch()
-
-        val postsInThreadFormat: List<Post> = generatePostsInThreadFormat(posts)
-
-        postsInThreadFormat.forEach { post ->
-            val documentReference = dbPosts.document()
-            batch.set(documentReference, post)
-        }
-
-        batch.commit()
-            .addOnSuccessListener {
-                onSuccess()
-                Log.i("insertPost", "Post inserido com sucesso")
-            }
-            .addOnFailureListener {
-                onError()
-                Log.i("insertPost", "Erro ao inserir post ${it.message}")
-            }
     }
 
     private fun generatePostsInThreadFormat(posts: List<Post>): List<Post> {
@@ -148,7 +122,6 @@ class PostFirestore {
                 )
             )
         }
-
 
         return postsInThreadFormat
     }

@@ -1,12 +1,9 @@
-package com.paradoxo.threadscompose.ui
+package com.paradoxo.threadscompose.ui.feed
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -27,10 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.compose.LottieAnimation
@@ -40,6 +34,7 @@ import com.airbnb.lottie.compose.rememberLottieAnimatable
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.paradoxo.threadscompose.R
 import com.paradoxo.threadscompose.model.Post
+import com.paradoxo.threadscompose.ui.PostItem
 import kotlinx.coroutines.launch
 
 
@@ -48,7 +43,6 @@ fun FeedScreen(
     modifier: Modifier = Modifier,
     posts: List<Post> = emptyList(),
 ) {
-
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -154,19 +148,9 @@ private fun ExpandableAppLogoLottie() {
                 )
             }
     ) {
-        // To remove click animation of clickable modifier
-        val interactionSource = remember { MutableInteractionSource() }
-
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null
-                ) {
-//                    lottieSpeed = if (lottieSpeed == 0f) 1f else 0f
-//                    lottiePreviousProgress = lottieAnimatable.progress
-                },
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
         ) {
 
@@ -177,61 +161,6 @@ private fun ExpandableAppLogoLottie() {
                     .size(animatedImageSize.value.dp)
             )
 
-        }
-    }
-}
-
-@Composable
-private fun ExpandableAppLogo() {
-    val maxHeightImage = 200.dp
-    val defaultSizeImage = 72.dp
-    val coroutineScope = rememberCoroutineScope()
-    val animatedImageSize = remember { Animatable(defaultSizeImage.value) }
-
-    Box(
-        modifier = Modifier
-            .pointerInput(Unit) {
-                detectVerticalDragGestures(
-                    onVerticalDrag = { change, offset ->
-                        coroutineScope.launch {
-                            val newSize =
-                                (animatedImageSize.value + offset / 8).coerceAtLeast(
-                                    defaultSizeImage.value
-                                )
-                            if (newSize < maxHeightImage.value) {
-                                animatedImageSize.snapTo(newSize)
-                            }
-                            change.consume()
-                        }
-                    },
-                    onDragEnd = {
-                        coroutineScope.launch {
-                            animatedImageSize.animateTo(
-                                defaultSizeImage.value,
-                                animationSpec = spring(
-                                    dampingRatio = Spring.DampingRatioLowBouncy,
-                                    stiffness = Spring.StiffnessLow
-                                )
-                            )
-                        }
-                    }
-                )
-            }
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-        ) {
-
-            Image(
-                painter = painterResource(id = R.drawable.ic_logo_colors),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(animatedImageSize.value.dp)
-                    .fillMaxWidth(),
-                colorFilter = ColorFilter.tint(color = Color.Gray)
-            )
         }
     }
 }

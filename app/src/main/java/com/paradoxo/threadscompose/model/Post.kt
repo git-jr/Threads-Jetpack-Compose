@@ -10,9 +10,3 @@ data class Post(
     val likes: List<String> = emptyList(),
     val comments: List<Comment> = emptyList()
 )
-
-data class Comment(
-    val id: String = "",
-    val profilePicAuthor: String = "",
-)
-

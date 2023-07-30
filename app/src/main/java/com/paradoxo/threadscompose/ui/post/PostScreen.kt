@@ -1,4 +1,4 @@
-package com.paradoxo.threadscompose.ui
+package com.paradoxo.threadscompose.ui.post
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -68,8 +68,6 @@ import com.paradoxo.threadscompose.R
 import com.paradoxo.threadscompose.model.Post
 import com.paradoxo.threadscompose.model.UserAccount
 import com.paradoxo.threadscompose.sampleData.SampleData
-import com.paradoxo.threadscompose.utils.getCurrentTime
-import com.paradoxo.threadscompose.utils.showMessage
 
 @Composable
 internal fun PostScreen(
@@ -78,7 +76,6 @@ internal fun PostScreen(
     onSendPost: (List<Post>) -> Unit = {},
     onBack: () -> Unit = {}
 ) {
-
     val posts = mutableListOf(
         PostScreenState(
             currentUser,
@@ -93,14 +90,9 @@ internal fun PostScreen(
         mutableStateOf(false)
     }
 
-
     val pickMedia = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
         onResult = { uris: List<Uri> ->
-//            uris.forEach {
-//                posts.last().medias.add(it.toString())
-//                Log.d("PostScreen", "onResult: ${it.toString()}")
-//            }
 
             posts[posts.lastIndex] = posts.last().copy(
                 medias = uris.map { it.toString() }.toMutableList()
@@ -246,7 +238,6 @@ internal fun PostScreen(
                     ),
                     modifier = Modifier
                         .clickable(enabled = canAddNewPost) {
-                            context.showMessage("Publicar a line!")
                             onSendPost(posts.map { it.toPost() })
                         }
                         .padding(16.dp)
@@ -255,6 +246,32 @@ internal fun PostScreen(
 
         }
     }
+}
+
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun PostScreenAppBar(
+    onBack: () -> Unit = {}
+) {
+    TopAppBar(
+        navigationIcon = {
+            Row {
+                IconButton(onClick = { onBack() }) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close"
+                    )
+                }
+            }
+        },
+        title = {
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Nova thread",
+                fontWeight = FontWeight.Bold
+            )
+        })
 }
 
 
@@ -270,12 +287,12 @@ private fun EditPostItem(
     val focusRequester = remember { FocusRequester() }
     val dividerColor = Color.Gray.copy(alpha = 0.2f)
 
-    var editTextState by remember {
+    var editTextPostState by remember {
         mutableStateOf(postState.content)
     }
 
-    LaunchedEffect(editTextState) {
-        postState.content = editTextState
+    LaunchedEffect(editTextPostState) {
+        postState.content = editTextPostState
     }
 
     val isFirstPost = postState.isFirstPost
@@ -343,25 +360,25 @@ private fun EditPostItem(
 
 
             BasicTextField(
-                value = editTextState,
+                value = editTextPostState,
                 onValueChange = {
                     if (it.endsWith("\n")) {
-                        if (isFirstPost && editTextState.isEmpty()) {
-                            editTextState = ""
+                        if (isFirstPost && editTextPostState.isEmpty()) {
+                            editTextPostState = ""
                             return@BasicTextField
                         } else {
                             if (!isFirstPost && it.endsWith("\n\n\n") && it.length == 3) {
                                 return@BasicTextField
                             }
-                            if (it.endsWith("\n\n\n") && editTextState.isNotEmpty()) {
-                                editTextState = editTextState.dropLast(2)
+                            if (it.endsWith("\n\n\n") && editTextPostState.isNotEmpty()) {
+                                editTextPostState = editTextPostState.dropLast(2)
                                 onAddNew()
                                 return@BasicTextField
                             }
                         }
                     }
                     if (!it.endsWith("\n\n\n")) {
-                        editTextState = it
+                        editTextPostState = it
                     }
 
                     if (isFirstPost) {
@@ -378,7 +395,7 @@ private fun EditPostItem(
                 ),
                 decorationBox = { innerValue ->
                     Box {
-                        if (editTextState.isEmpty()) {
+                        if (editTextPostState.isEmpty()) {
                             Text(
                                 "Iniciar uma thread...",
                                 color = Color.Black.copy(alpha = 0.5f),
@@ -481,32 +498,6 @@ private fun EditPostItem(
 }
 
 
-@Composable
-@OptIn(ExperimentalMaterial3Api::class)
-private fun PostScreenAppBar(
-    onBack: () -> Unit = {}
-) {
-    TopAppBar(
-        navigationIcon = {
-            Row {
-                IconButton(onClick = { onBack() }) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close"
-                    )
-                }
-            }
-        },
-        title = {
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Nova thread",
-                fontWeight = FontWeight.Bold
-            )
-        })
-}
-
-
 @Preview(showBackground = true)
 @Composable
 fun EditPostItemWithImagesPreview() {
@@ -537,23 +528,5 @@ fun EditPostItemPreview() {
             content = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eget aliquam ultricies, nisl nisl aliquet nisl, eget aliquam nisl nisl eget nisl. Donec euismod, nisl eget aliquam ultricies, nisl nisl aliquet nisl, eget aliquam nisl nisl eget nisl. Donec euismod, nisl eget aliquam ultricies, nisl nisl aliquet nisl, eget aliquam nisl nisl eget nisl. Donec euismod, nisl eget aliquam ultricies, nisl nisl aliquet nisl, eget aliquam nisl nisl eget nisl. Donec euismod, nisl eget aliquam ultricies, nisl nisl aliquet nisl, eget aliquam nisl nisl eget nisl. Donec euismod, nisl eget aliquam ultricies, nisl nisl aliquet nisl, eget aliquam nisl nisl eget nisl. Donec euismod, nisl eget aliquam ultricies, nisl nisl aliquet nisl, eget aliquam nisl nisl eget nisl. ",
             date = "10/10/2021"
         )
-    )
-}
-
-
-internal data class PostScreenState(
-    val userAccount: UserAccount,
-    var content: String,
-    var medias: MutableList<String> = mutableListOf(),
-    val date: String,
-    val isFirstPost: Boolean = false
-) {
-    fun toPost() = Post(
-        userAccount = userAccount,
-        date = getCurrentTime(),
-        description = content,
-        medias = medias,
-        likes = emptyList(),
-        comments = emptyList(),
     )
 }

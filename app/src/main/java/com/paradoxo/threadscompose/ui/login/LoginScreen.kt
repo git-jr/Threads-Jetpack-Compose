@@ -5,7 +5,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -43,6 +42,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.paradoxo.threadscompose.R
 import com.paradoxo.threadscompose.ui.theme.ThreadsComposeTheme
+import com.paradoxo.threadscompose.utils.noRippleClickable
 import com.paradoxo.threadscompose.utils.showMessage
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -66,7 +66,11 @@ internal fun LoginScreen(
             }
 
             AppState.LoggedIn -> {
-                onAuthComplete(null)
+                if (loginState.profileInServer) {
+                    onAuthComplete(loginState.currentUserName)
+                } else {
+                    onAuthComplete(null)
+                }
             }
 
             AppState.LoggedOut -> {
@@ -160,7 +164,7 @@ fun LoggedOutScreen(
 
             Row(
                 modifier = Modifier
-                    .clickable {
+                    .noRippleClickable {
                         launcher.launch(listOf("email", "public_profile"))
                     }
                     .fillMaxWidth()
@@ -179,19 +183,19 @@ fun LoggedOutScreen(
             ) {
                 Column {
                     Text(
-                        text = "Entrar com Instagram",
+                        text = "Entrar com Facebook",
                         style = MaterialTheme.typography.bodyLarge.copy(
                             color = Color.Gray.copy(alpha = 0.8f)
                         )
                     )
                     Text(
-                        text = "jr.obom",
+                        text = "Fazer login",
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
 
                 Image(
-                    painter = painterResource(id = R.drawable.ic_insta),
+                    painter = painterResource(id = R.drawable.ic_facebook),
                     contentDescription = "logo instagram",
                     modifier = Modifier
                         .padding(16.dp)
@@ -206,10 +210,11 @@ fun LoggedOutScreen(
                     color = Color.Gray.copy(alpha = 0.8f)
                 ),
                 modifier = Modifier
-                    .clickable {
+                    .fillMaxWidth()
+                    .noRippleClickable {
                         onAuthComplete(null)
                     }
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp, vertical = 22.dp)
             )
         }
 

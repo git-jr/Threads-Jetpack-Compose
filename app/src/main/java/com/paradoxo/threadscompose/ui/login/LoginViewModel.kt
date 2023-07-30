@@ -30,7 +30,11 @@ internal class LoginViewModel : ViewModel() {
         viewModelScope.launch {
             delay(Random.nextLong(600, 1200))
             if (auth.currentUser != null) {
-                _uiState.value = LoginState(AppState.LoggedIn)
+                _uiState.value = _uiState.value.copy(
+                    appState = AppState.LoggedIn,
+                    profileInServer = true,
+                    currentUserName = auth.currentUser?.displayName ?: ""
+                )
             } else {
                 _uiState.value = LoginState(AppState.LoggedOut)
             }

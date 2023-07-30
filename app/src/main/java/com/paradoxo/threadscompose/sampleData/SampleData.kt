@@ -3,7 +3,7 @@ package com.paradoxo.threadscompose.sampleData
 import com.paradoxo.threadscompose.R
 import com.paradoxo.threadscompose.model.Comment
 import com.paradoxo.threadscompose.model.Notification
-import com.paradoxo.threadscompose.model.NotificationType
+import com.paradoxo.threadscompose.model.NotificationTypeEnum
 import com.paradoxo.threadscompose.model.Post
 import com.paradoxo.threadscompose.model.UserAccount
 import com.paradoxo.threadscompose.utils.getCurrentTime
@@ -40,7 +40,7 @@ class SampleData {
         "Buscando a magia em cada dia.",
         "Vivendo a vida ao máximo!"
     )
-    val images = listOf(
+    private val images = listOf(
         "https://raw.githubusercontent.com/git-jr/sample-files/7bc859dfa8a6241fa9c0d723ba6e7517bdfedd50/profile%20pics/profile_pic_emoji_1.png",
         "https://raw.githubusercontent.com/git-jr/sample-files/7bc859dfa8a6241fa9c0d723ba6e7517bdfedd50/profile%20pics/profile_pic_emoji_2.png",
         "https://raw.githubusercontent.com/git-jr/sample-files/7bc859dfa8a6241fa9c0d723ba6e7517bdfedd50/profile%20pics/profile_pic_emoji_3.png",
@@ -94,8 +94,8 @@ class SampleData {
                     extraContent = if (Random.nextBoolean()) "Conteúdo extra $it" else null,
                     image = R.drawable.profile_pic_emoji_4,
                     time = "1d",
-                    type = if (it in 2..4) NotificationType.values().sortedArray()[it] else
-                        NotificationType.values().sortedArray()[Random.nextInt(0, 5)],
+                    type = if (it in 2..4) NotificationTypeEnum.values().sortedArray()[it] else
+                        NotificationTypeEnum.values().sortedArray()[Random.nextInt(0, 5)],
                     isFollowing = Random.nextBoolean(),
                 )
             )

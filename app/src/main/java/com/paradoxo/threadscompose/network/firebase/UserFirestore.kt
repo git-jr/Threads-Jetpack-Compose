@@ -6,7 +6,7 @@ import com.paradoxo.threadscompose.model.UserAccount
 
 class UserFirestore {
     private val firebaseFirestore = FirebaseFirestore.getInstance()
-    val dbUsers = firebaseFirestore.collection("users")
+    private val dbUsers = firebaseFirestore.collection("users")
 
 
     fun getUserById(
@@ -19,7 +19,7 @@ class UserFirestore {
             .addOnSuccessListener {
                 it.toObject(UserAccount::class.java)?.let { userAccount ->
                     onSuccess(userAccount)
-                    Log.i("getUserById", "Usuário obtido com sucesso ${userAccount?.name}")
+                    Log.i("getUserById", "Usuário obtido com sucesso ${userAccount.name}")
                 } ?: run {
                     onError()
                     Log.i("getUserById", "Usuário não encontrado")
@@ -41,11 +41,11 @@ class UserFirestore {
             .set(userAccount)
             .addOnSuccessListener {
                 onSuccess()
-                Log.i("saveUser", "Usuário inserido com sucesso")
+                Log.i("saveUser", "Usuário salvo com sucesso")
             }
             .addOnFailureListener {
                 onError()
-                Log.i("saveUser", "Erro ao inserir usuário ${it.message}")
+                Log.i("saveUser", "Erro ao salvar usuário ${it.message}")
             }
     }
 }

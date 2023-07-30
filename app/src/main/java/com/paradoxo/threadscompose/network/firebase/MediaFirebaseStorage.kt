@@ -13,16 +13,13 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.util.UUID
 
-class MediaFirebaseStorage() {
-
+class MediaFirebaseStorage {
     private val idCurrentUser = Firebase.auth.currentUser?.uid
-
     private val storage = Firebase.storage
     private val storageRef = storage.reference
     private val ref = storageRef.child("users/$idCurrentUser/medias/posts/")
 
-
-    suspend fun uploadMediaOk(
+    suspend fun uploadMedia(
         medias: List<String>,
         onSuccess: () -> Unit = {},
         onError: () -> Unit = {},
@@ -57,111 +54,6 @@ class MediaFirebaseStorage() {
                 }
                 Log.i("imageUpload", "imageUpload error: ${e.message}")
                 emptyList<String>()
-            }
-        }
-    }
-
-
-    suspend fun uploadMediaFazUploadMasRetornoEstaSendoImediato(
-        medias: List<String>,
-        onSuccess: () -> Unit = {},
-        onError: () -> Unit = {},
-    ): List<String> {
-        val dispatcher = Dispatchers.IO
-        val downloadUrls = mutableListOf<String>()
-
-        withContext(dispatcher) {
-            val stackTasks = medias.map { imageUri ->
-                val uuid = UUID.randomUUID().toString()
-                val currentRef = ref.child(uuid)
-
-                async(dispatcher) {
-                    val file = Uri.parse(imageUri)
-                    val uploadTask = currentRef.putFile(file)
-
-                    uploadTask.continueWithTask { task ->
-                        if (!task.isSuccessful) {
-                            task.exception?.let {
-                                throw it
-                            }
-                        }
-                        currentRef.downloadUrl
-                    }.addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            val downloadUri = task.result.toString()
-                            downloadUrls.add(downloadUri)
-                            Log.i("imageUpload", "imageUpload link: $downloadUri")
-                        } else {
-                            Log.i(
-                                "imageUpload",
-                                "imageUpload error: ${task.exception}"
-                            )
-                        }
-                    }
-                }
-            }
-            try {
-                stackTasks.awaitAll()
-                withContext(Dispatchers.Main) {
-                    onSuccess()
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    onError()
-                }
-                Log.i("imageUpload", "imageUpload error: ${e.message}")
-            }
-        }
-
-        return downloadUrls
-    }
-
-    suspend fun uploadMediaFuncional(
-        medias: List<String>,
-        onSuccess: () -> Unit = {},
-        onError: () -> Unit = {},
-    ) {
-        val dispatcher = Dispatchers.IO
-
-        withContext(dispatcher) {
-            val stackTasks = medias.map { imageUri ->
-                val uuid = UUID.randomUUID().toString()
-                val currentRef = ref.child(uuid)
-
-                async(dispatcher) {
-                    val file = Uri.parse(imageUri)
-                    val uploadTask = currentRef.putFile(file)
-
-                    uploadTask.continueWithTask { task ->
-                        if (!task.isSuccessful) {
-                            task.exception?.let {
-                                throw it
-                            }
-                        }
-                        currentRef.downloadUrl
-                    }.addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            val downloadUri = task.result
-                            Log.i("imageUpload", "imageUpload link: $downloadUri")
-                        } else {
-                            Log.i(
-                                "imageUpload",
-                                "imageUpload error: ${task.exception}"
-                            )
-                        }
-                    }
-                }
-            }
-            try {
-                stackTasks.awaitAll()
-                withContext(Dispatchers.Main) {
-                    onSuccess()
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    onError()
-                }
-                Log.i("imageUpload", "imageUpload error: ${e.message}")
             }
         }
     }

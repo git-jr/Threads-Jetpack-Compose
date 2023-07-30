@@ -54,7 +54,6 @@ fun ProfileEditScreen(
     userAccount: UserAccount,
     onSave: (UserAccount) -> Unit = {}
 ) {
-
     var bioEditTextState by remember {
         mutableStateOf(userAccount.bio)
     }

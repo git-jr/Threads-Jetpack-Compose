@@ -1,4 +1,4 @@
-package com.paradoxo.threadscompose.ui
+package com.paradoxo.threadscompose.ui.notification
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -40,6 +40,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -58,7 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.paradoxo.threadscompose.R
 import com.paradoxo.threadscompose.model.Notification
-import com.paradoxo.threadscompose.model.NotificationType
+import com.paradoxo.threadscompose.model.NotificationTypeEnum
 import com.paradoxo.threadscompose.sampleData.SampleData
 import com.paradoxo.threadscompose.ui.theme.ThreadsComposeTheme
 
@@ -66,18 +67,13 @@ import com.paradoxo.threadscompose.ui.theme.ThreadsComposeTheme
 @Composable
 fun NotificationsScreen(modifier: Modifier = Modifier) {
 
-    val tabItems = listOf(
-        "Tudo",
-        "Respostas",
-        "Menções",
-        "Verificado",
-    )
-
     val state by remember { mutableStateOf(NotificationScreenState()) }
     state.notifications.addAll(SampleData().notifications)
 
     val allNotifications = state.notifications
     val notifications = allNotifications.toMutableStateList()
+
+    val tabItems = listOf("Tudo", "Respostas", "Menções", "Verificado")
 
     Scaffold(
         modifier = modifier,
@@ -102,7 +98,7 @@ fun NotificationsScreen(modifier: Modifier = Modifier) {
                             return@NotificationTabs
                         } else {
                             val filterList = allNotifications.filter {
-                                it.type == NotificationType.values()[selectedItem]
+                                it.type == NotificationTypeEnum.values()[selectedItem]
                             }
                             notifications.clear()
                             notifications.addAll(filterList)
@@ -154,7 +150,7 @@ private fun NotificationTabs(
     onItemSelected: (Int) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
-    var selectedItem by remember { mutableStateOf(0) }
+    var selectedItem by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(selectedItem) {
         scrollState.animateScrollTo(selectedItem * 100)
@@ -313,7 +309,7 @@ private fun NotificationItem(
                     Color.Black
                 }
 
-                if (notification.type == NotificationType.Follow) {
+                if (notification.type == NotificationTypeEnum.Follow) {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
@@ -357,24 +353,24 @@ private fun NotificationItem(
 }
 
 @Composable
-fun getIconByType(type: NotificationType): Pair<Painter, Color> {
+fun getIconByType(type: NotificationTypeEnum): Pair<Painter, Color> {
     return when (type) {
-        NotificationType.Follow -> Pair(
+        NotificationTypeEnum.Follow -> Pair(
             rememberVectorPainter(Icons.Default.Person),
             Color(0xFF6B3AEE)
         )
 
-        NotificationType.Like -> Pair(
+        NotificationTypeEnum.Like -> Pair(
             painterResource(id = R.drawable.ic_heart),
             Color(0xFFFB0169)
         )
 
-        NotificationType.Comment -> Pair(
+        NotificationTypeEnum.Comment -> Pair(
             painterResource(id = R.drawable.ic_reply),
             Color(0xFF1FC1FC)
         )
 
-        NotificationType.Mention -> Pair(
+        NotificationTypeEnum.Mention -> Pair(
             painterResource(id = R.drawable.ic_attach_file),
             Color(0xFF18C686)
         )
@@ -400,7 +396,3 @@ fun NotificationsScreenPreview() {
     }
 }
 
-
-internal data class NotificationScreenState(
-    val notifications: MutableList<Notification> = mutableListOf(),
-)
