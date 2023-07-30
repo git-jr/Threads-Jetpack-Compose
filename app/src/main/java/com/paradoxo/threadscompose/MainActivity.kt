@@ -5,17 +5,40 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.DraggableAnchors
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.anchoredDraggable
+import androidx.compose.foundation.gestures.animateTo
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -24,13 +47,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.consumeAllChanges
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModel
@@ -67,6 +97,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 
 class MainActivity : ComponentActivity() {
@@ -79,125 +110,9 @@ class MainActivity : ComponentActivity() {
 
         if (testMode) {
             setContent {
-                val scope = rememberCoroutineScope()
-                val postFirestore = PostFirestore()
-                PostScreen(
-                    currentUser = SampleData().generateSampleInvitedUser(),
-                    onSendPost = { posts: List<Post> ->
-                        scope.launch {
-                            postFirestore.insertPost(
-                                posts = posts,
-                                onSuccess = {},
-                                onError = {}
-                            )
-                        }
-                    }
-                )
-
-
-                // 17:06 Work successfully, but can be matter
-//                val mediaFirebaseStorage = MediaFirebaseStorage()
-//                val scope = rememberCoroutineScope()
-//                val context = LocalContext.current
-//
-//                PostScreen(
-//                    currentUser = SampleData().generateSampleInvitedUser(),
-//                    onSendPost = { posts: List<Post> ->
-//                        posts.forEach { currentPost ->
-//                            scope.launch {
-//                                mediaFirebaseStorage.uploadMediaOk(
-//                                    medias = currentPost.medias,
-//                                    onSuccess = {
-//                                        context.showMessage("Imagens enviadas com sucesso")
-//                                    },
-//                                    onError = {
-//                                        context.showMessage("Erro ao enviar imagens")
-//                                    }
-//                                )
-//                            }
-//                        }
-//                    }
-//                )
-                // 17:06 Work successfully, but can be matter
-
-
-//                val storage = Firebase.storage
-//                val storageRef = storage.reference
-
-//                PostScreen(
-//                    currentUser = SampleData().generateSampleInvitedUser(),
-//                    onSendPost = { posts: List<Post> ->
-//                        val dispatcher = Dispatchers.IO
-//
-//                        lifecycleScope.launch {
-//
-//                            val stackTasks: List<Deferred<Task<Uri>>> = posts.first().medias.map { imageUri ->
-//                                val uuid = UUID.randomUUID().toString()
-//                                val ref = storageRef.child("posts/$uuid")
-//
-//
-//                                // criar uma tarefa de upload para cada imagem
-//                                async(dispatcher) {
-//                                    val file = Uri.parse(imageUri)
-//                                    val uploadTask = ref.putFile(file)
-//
-//                                    uploadTask.continueWithTask { task ->
-//                                        if (!task.isSuccessful) {
-//                                            task.exception?.let {
-//                                                throw it
-//                                            }
-//                                        }
-//                                        ref.downloadUrl
-//                                    }.addOnCompleteListener { task ->
-//                                        if (task.isSuccessful) {
-//                                            val downloadUri = task.result
-//                                            Log.i("imageUpload", "imageUpload link: $downloadUri")
-//                                        } else {
-//                                            Log.i(
-//                                                "imageUpload",
-//                                                "imageUpload error: ${task.exception}"
-//                                            )
-//                                        }
-//                                    }
-//                                }
-//                            }
-//
-//                            // aguardar todas as tarefas terminarem
-//                            try {
-//                                stackTasks.awaitAll()
-//                            } catch (e: Exception) {
-//                                Log.i("imageUpload", "imageUpload error: ${e.message}")
-//                            }
-//                        }
-//                    }
-//                )
-
-//                    val postFirestore = PostFirestore ()
-//                postFirestore.getAllPosts(
-//                    onSuccess = { posts ->
-//                        setContent {
-//                            ThreadsComposeTheme {
-//                                FeedScreen(posts = posts)
-//                            }
-//                        }
-//                    },
-//                    onError = {
-//                        setContent {
-//                            ThreadsComposeTheme {
-//                                FeedScreen(posts = SampleData().posts)
-//                            }
-//                        }
-//                    }
-//                )
-
-
-//                postFirestore.insertPost(
-//                    SampleData().posts.first().copy(
-//                        medias = listOf(),
-//                        comments = listOf(),
-//                        likes = listOf()
-//                    )
-//                )
+                Box {
+                    FeedScreen(posts = SampleData().posts)
+                }
             }
         } else {
             setContent {
@@ -560,3 +475,381 @@ data class SessionState(
     var appState: AppState = AppState.Loading,
     var userAccount: UserAccount = UserAccount(),
 )
+
+enum class DragAnchors(val fraction: Float) {
+    Start(.050f),
+    End(.5f),
+}
+
+@Composable
+private fun DraggableContent(
+    modifier: Modifier = Modifier,
+) {
+    Spacer(modifier = modifier)
+}
+
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun VerticalDraggableSampleTest(
+    modifier: Modifier = Modifier,
+) {
+    val minHeightImage = 32.dp
+    var imageSize by remember { mutableStateOf(0.dp) }
+    var currentPosition by remember { mutableStateOf(0.dp) }
+
+    val density = LocalDensity.current
+    val positionalThreshold = { distance: Float -> distance * 0.5f }
+    val velocityThreshold = { with(density) { 100.dp.toPx() } }
+    val animationSpec = tween<Float>()
+    val state = rememberSaveable(
+        density,
+        saver = AnchoredDraggableState.Saver(
+            animationSpec = animationSpec,
+            positionalThreshold = positionalThreshold,
+            velocityThreshold = velocityThreshold,
+        )
+    ) {
+        AnchoredDraggableState(
+            initialValue = DragAnchors.Start,
+            positionalThreshold = positionalThreshold,
+            velocityThreshold = velocityThreshold,
+            animationSpec = animationSpec,
+        )
+    }
+//    val contentSize = 80.dp
+//    val contentSizePx = with(density) { contentSize.toPx() }
+
+
+    // Quando o arrastar chegar no final, volta pa o inicio com uma animação
+    if (state.currentValue == DragAnchors.End) {
+        LaunchedEffect(Unit) {
+            state.animateTo(DragAnchors.Start)
+        }
+    }
+
+    Box(
+        modifier
+            .onSizeChanged { layoutSize ->
+                val dragEndPoint = layoutSize.height
+                state.updateAnchors(
+                    DraggableAnchors {
+                        DragAnchors
+                            .values()
+                            .forEach { anchor ->
+                                anchor at dragEndPoint * anchor.fraction
+                            }
+                    }
+                )
+            }
+    ) {
+        DraggableContent(
+            modifier = Modifier
+                .fillMaxSize()
+                .offset {
+                    val intOffset = IntOffset(
+                        x = 0,
+                        y = state
+                            .requireOffset()
+                            .roundToInt(),
+                    )
+                    currentPosition = if (intOffset.y.dp != 0.dp) (intOffset.y.dp / 8) else 0.dp
+                    imageSize =
+                        if (currentPosition < minHeightImage) minHeightImage else currentPosition
+                    intOffset
+                }
+                .anchoredDraggable(state, Orientation.Vertical),
+        )
+    }
+
+    Column(
+        Modifier.fillMaxHeight(),
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_logo_colors),
+            contentDescription = null,
+            modifier = Modifier
+                .size(imageSize)
+                .align(Alignment.CenterHorizontally)
+        )
+
+    }
+}
+
+
+@Composable
+private fun VerticalDraggableSampleTest1(
+    modifier: Modifier = Modifier
+) {
+    val maxHeightImage = 200.dp
+    val defaultSizeImage = 72.dp
+    val coroutineScope = rememberCoroutineScope()
+    val animatedImageSize = remember { Animatable(defaultSizeImage.value) }
+
+    LazyColumn(
+        modifier = modifier.fillMaxSize()
+    ) {
+        item {
+            Box(
+                modifier = Modifier
+                    .pointerInput(Unit) {
+                        detectVerticalDragGestures(
+                            onVerticalDrag = { change, offset ->
+                                coroutineScope.launch {
+                                    val newSize =
+                                        (animatedImageSize.value + offset / 8).coerceAtLeast(
+                                            defaultSizeImage.value
+                                        )
+                                    if (newSize < maxHeightImage.value) {
+                                        animatedImageSize.snapTo(newSize)
+                                    }
+                                    change.consume()
+                                }
+                            },
+                            onDragEnd = {
+                                coroutineScope.launch {
+                                    animatedImageSize.animateTo(
+                                        defaultSizeImage.value,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioLowBouncy,
+                                            stiffness = Spring.StiffnessLow
+                                        )
+                                    )
+                                }
+                            }
+                        )
+                    }
+                    .onGloballyPositioned {
+//                        if (it.positionInParent().y == 0f) { // Check if the top of the box is visible
+//                            // Animate back to default size
+//                            coroutineScope.launch {
+//                                animatedImageSize.animateTo(
+//                                    defaultSizeImage.value,
+//                                    animationSpec = spring(
+//                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+//                                        stiffness = Spring.StiffnessLow
+//                                    )
+//                                )
+//                            }
+//                        }
+                    }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_logo_colors),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(animatedImageSize.value.dp)
+                            .fillMaxWidth()
+                    )
+                }
+            }
+        }
+
+        items(100) { index ->
+            Text(text = "Item $index")
+        }
+    }
+}
+
+@Composable
+private fun VerticalDraggableSampleTest2(
+    modifier: Modifier = Modifier,
+) {
+    val defaultSizeImage = 72.dp // Define o tamanho específico que a imagem deve retornar
+
+    var imageSize by remember { mutableStateOf(defaultSizeImage) }
+    val coroutineScope = rememberCoroutineScope()
+
+    val draggableState = remember {
+        mutableStateOf(imageSize)
+    }
+    val animatedOffsetY = remember {
+        Animatable(0f)
+    }
+
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTransformGestures { _, _, zoom, _ ->
+                    coroutineScope.launch {
+                        // Scaling imageSize based on zoom
+                        draggableState.value =
+                            (draggableState.value * zoom).coerceAtLeast(defaultSizeImage)
+                    }
+                }
+            }
+            .verticalScroll(rememberScrollState())
+    ) {
+        item {
+            Image(
+                painter = painterResource(id = R.drawable.ic_logo_colors),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(imageSize)
+                    .fillMaxWidth()
+//                    .align(Alignment.CenterHorizontally)
+            )
+        }
+        items(100) { index ->
+// Your list items
+            Text(text = "Item $index")
+        }
+    }
+
+// Handling drag gestures
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .pointerInput(Unit) {
+                detectVerticalDragGestures(
+                    onDragEnd = {
+                        imageSize = defaultSizeImage
+                        // Animação para retornar a imagem ao tamanho desejado quando soltar
+//                        coroutineScope.launch {
+//                            animatedOffsetY.animateTo(
+//                                targetValue = 0f,
+//                                animationSpec = spring(
+//                                    dampingRatio = Spring.DampingRatioMediumBouncy, // Amortecimento
+//                                    stiffness = Spring.StiffnessLow // Rigidez
+//                                )
+//                            )
+//                            imageSize = defaultSizeImage
+//                        }
+                    },
+                    onVerticalDrag = { change, offset ->
+                        coroutineScope.launch {
+                            val newSize =
+                                (imageSize + (offset / 8).dp).coerceAtLeast(defaultSizeImage)
+                            animatedOffsetY.snapTo(offset)
+                            imageSize = newSize
+                            change.consumeAllChanges()
+                        }
+                    }
+                )
+            }
+            .onGloballyPositioned { layoutCoordinates ->
+                val layoutHeight = layoutCoordinates.size.height.toFloat()
+                val dragHeight = animatedOffsetY.value
+
+                // Scaling imageSize based on drag height
+                imageSize =
+                    (defaultSizeImage + (dragHeight / 8).dp).coerceIn(
+                        defaultSizeImage,
+                        layoutHeight.dp
+                    )
+            }
+    ) {
+        DraggableContent(
+            modifier = Modifier
+                .fillMaxSize()
+                .offset { IntOffset(0, animatedOffsetY.value.roundToInt()) }
+        )
+    }
+}
+
+@Composable
+private fun VerticalDraggableSampleTest3(
+    modifier: Modifier = Modifier,
+) {
+    val defaultSizeImage = 72.dp // Define o tamanho específico que a imagem deve retornar
+
+    var imageSize by remember { mutableStateOf(defaultSizeImage) }
+    val coroutineScope = rememberCoroutineScope()
+
+    val draggableState = remember {
+        mutableStateOf(imageSize)
+    }
+    val animatedOffsetY = remember {
+        Animatable(0f)
+    }
+
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTransformGestures { _, _, zoom, _ ->
+                    coroutineScope.launch {
+                        // Scaling imageSize based on zoom
+                        draggableState.value =
+                            (draggableState.value * zoom).coerceAtLeast(defaultSizeImage)
+                    }
+                }
+            }
+    ) {
+        item {
+            Image(
+                painter = painterResource(id = R.drawable.ic_logo_colors),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(imageSize)
+                    .fillMaxWidth()
+//                    .align(Alignment.CenterHorizontally)
+            )
+        }
+        items(100) { index ->
+            // Your list items
+            Text(text = "Item $index")
+        }
+    }
+
+    // Handling drag gestures
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .pointerInput(Unit) {
+                detectVerticalDragGestures(
+                    onDragEnd = {
+                        imageSize = defaultSizeImage
+                        // Animação para retornar a imagem ao tamanho desejado quando soltar
+//                        coroutineScope.launch {
+//                            animatedOffsetY.animateTo(
+//                                targetValue = 0f,
+//                                animationSpec = spring(
+//                                    dampingRatio = Spring.DampingRatioMediumBouncy, // Amortecimento
+//                                    stiffness = Spring.StiffnessLow // Rigidez
+//                                )
+//                            )
+//                            imageSize = defaultSizeImage
+//                        }
+                    },
+                    onVerticalDrag = { change, offset ->
+                        coroutineScope.launch {
+                            val newSize =
+                                (imageSize + (offset / 8).dp).coerceAtLeast(defaultSizeImage)
+                            animatedOffsetY.snapTo(offset)
+                            imageSize = newSize
+                            change.consumeAllChanges()
+                        }
+                    }
+                )
+            }
+            .onGloballyPositioned { layoutCoordinates ->
+                val layoutHeight = layoutCoordinates.size.height.toFloat()
+                val dragHeight = animatedOffsetY.value
+
+                // Scaling imageSize based on drag height
+                imageSize =
+                    (defaultSizeImage + (dragHeight / 8).dp).coerceIn(
+                        defaultSizeImage,
+                        layoutHeight.dp
+                    )
+            }
+    ) {
+        DraggableContent(
+            modifier = Modifier
+                .fillMaxSize()
+                .offset { IntOffset(0, animatedOffsetY.value.roundToInt()) }
+        )
+    }
+}
+
+
