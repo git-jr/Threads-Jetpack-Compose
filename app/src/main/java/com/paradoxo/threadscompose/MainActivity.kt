@@ -118,7 +118,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        val testMode = true
+        val testMode = false
 
         if (testMode) {
             setContent {
@@ -231,8 +231,8 @@ class MainActivity : ComponentActivity() {
             }
 
             3 -> {
-                var previsousProgress by remember { mutableFloatStateOf(0f) }
-                var speed by remember { mutableFloatStateOf(0f) }
+                var previousProgress by remember { mutableFloatStateOf(0f) }
+                var speed by remember { mutableFloatStateOf(1f) }
                 val composition by rememberLottieComposition(
                     LottieCompositionSpec.RawRes(
                         R.raw.logo_lines_animated
@@ -240,12 +240,15 @@ class MainActivity : ComponentActivity() {
                 )
                 val animatable = rememberLottieAnimatable()
 
+                val context = LocalContext.current
+                context.showMessage(animatable.isPlaying.toString())
+
                 LaunchedEffect(speed) {
                     animatable.animate(
                         composition,
                         iteration = LottieConstants.IterateForever,
                         speed = speed,
-                        initialProgress = previsousProgress,
+                        initialProgress = previousProgress,
                     )
                 }
                 val interactionSource = remember { MutableInteractionSource() }
@@ -259,7 +262,7 @@ class MainActivity : ComponentActivity() {
                             indication = null
                         ) {
                             speed = if (speed == 0f) 1f else 0f
-                            previsousProgress = animatable.progress
+                            previousProgress = animatable.progress
                         }
                 )
             }
