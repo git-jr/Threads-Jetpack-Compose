@@ -19,6 +19,7 @@ coil-compose = "2.4.0"
 firebase-bom = "32.2.0"
 firebase-firestore-ktx = "24.7.0"
 firebase-storage-ktx = "20.2.1"
+lottie-compose = "6.1.0"
 
 
 [libraries]
@@ -27,6 +28,7 @@ coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil-compose
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 facebook-android-sdk = { module = "com.facebook.android:facebook-android-sdk", version.ref = "facebook-android-sdk" }
 google-services = { module = "com.google.gms:google-services", version.ref = "google-services" }
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottie-compose" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation-compose" }
 lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "viewmodel-compose" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }

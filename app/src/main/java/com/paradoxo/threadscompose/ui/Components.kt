@@ -31,11 +31,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.paradoxo.threadscompose.R
 import com.paradoxo.threadscompose.model.Post
 import com.paradoxo.threadscompose.sampleData.SampleData
@@ -68,7 +70,10 @@ fun PostItem(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 AsyncImage(
-                    model = post.userAccount.imageProfileUrl,
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(post.userAccount.imageProfileUrl)
+                        .crossfade(true)
+                        .build(),
                     placeholder = painterResource(id = R.drawable.placeholder_image),
                     error = painterResource(id = R.drawable.placeholder_image),
                     contentDescription = "avatar",
@@ -138,7 +143,10 @@ fun PostItem(
                             items(post.medias) { media ->
                                 Row {
                                     AsyncImage(
-                                        model = media,
+                                        model = ImageRequest.Builder(LocalContext.current)
+                                            .data(media)
+                                            .crossfade(true)
+                                            .build(),
                                         placeholder = painterResource(id = R.drawable.placeholder_image),
                                         error = painterResource(id = R.drawable.placeholder_image),
                                         contentDescription = "avatar",
@@ -302,7 +310,10 @@ private fun ContainerOneProfilePic(
         Modifier.padding(horizontal = 8.dp, vertical = 16.dp)
     ) {
         AsyncImage(
-            model = profilePicAuthor,
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(profilePicAuthor)
+                .crossfade(true)
+                .build(),
             contentDescription = "avatar",
             modifier = Modifier
                 .size(22.dp)

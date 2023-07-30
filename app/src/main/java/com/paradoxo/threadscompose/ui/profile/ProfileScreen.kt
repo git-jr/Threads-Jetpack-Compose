@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.buildAnnotatedString
@@ -51,6 +52,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.paradoxo.threadscompose.R
 import com.paradoxo.threadscompose.model.UserAccount
 import com.paradoxo.threadscompose.sampleData.SampleData
@@ -164,7 +166,10 @@ fun ProfileScreen(
                         Box(modifier = Modifier.weight(0.2f)) {
 
                             AsyncImage(
-                                model = currentUser.imageProfileUrl,
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(currentUser.imageProfileUrl)
+                                    .crossfade(true)
+                                    .build(),
                                 placeholder = painterResource(id = R.drawable.placeholder_image),
                                 error = painterResource(id = R.drawable.placeholder_image),
                                 contentDescription = "Profile",
