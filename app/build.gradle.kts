@@ -74,6 +74,8 @@ android {
 }
 
 dependencies {
+
+    implementation (libs.lottie.compose)
     implementation(libs.androidx.foundation)
 
     implementation(platform(libs.firebase.bom))

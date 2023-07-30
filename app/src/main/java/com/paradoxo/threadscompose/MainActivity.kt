@@ -11,6 +11,8 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
@@ -18,6 +20,7 @@ import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +30,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -38,12 +43,14 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -75,6 +82,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieAnimatable
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.facebook.Profile
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -106,12 +118,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        val testMode = false
+        val testMode = true
 
         if (testMode) {
             setContent {
-                Box {
-                    FeedScreen(posts = SampleData().posts)
+                Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    LottieStyles()
                 }
             }
         } else {
@@ -160,6 +175,186 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 }
+            }
+        }
+    }
+
+    @Composable
+    private fun LottieStyles() {
+        val url =
+            "https://lottie.host/a2a247fa-25e6-4884-b30c-47af6bb0ce31/3Bz9KEEqBj.json"
+
+        val sampleTest = 3
+        when (sampleTest) {
+            1 -> {
+                val composition by rememberLottieComposition(
+                    spec = LottieCompositionSpec.Url(
+                        url
+                    )
+                )
+
+                LottieAnimation(
+                    composition = composition,
+                    iterations = LottieConstants.IterateForever
+                )
+            }
+
+            2 -> {
+                val anim = rememberLottieAnimatable()
+                val composition by rememberLottieComposition(
+                    LottieCompositionSpec.Url(url)
+                )
+                var sliderGestureProgress: Float? by remember { mutableStateOf(null) }
+                LaunchedEffect(composition, sliderGestureProgress) {
+                    when (val p = sliderGestureProgress) {
+                        null -> anim.animate(
+                            composition,
+                            iterations = 0,
+                            initialProgress = anim.progress,
+                            continueFromPreviousAnimate = false,
+                        )
+
+                        else -> anim.snapTo(progress = p)
+                    }
+                }
+                Box(Modifier.padding(bottom = 32.dp)) {
+                    LottieAnimation(anim.composition, { anim.progress })
+                    Slider(
+                        value = sliderGestureProgress ?: anim.progress,
+                        onValueChange = { sliderGestureProgress = it },
+                        onValueChangeFinished = { sliderGestureProgress = null },
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 8.dp)
+                    )
+                }
+            }
+
+            3 -> {
+                var previsousProgress by remember { mutableFloatStateOf(0f) }
+                var speed by remember { mutableFloatStateOf(0f) }
+                val composition by rememberLottieComposition(
+                    LottieCompositionSpec.RawRes(
+                        R.raw.logo_lines_animated
+                    )
+                )
+                val animatable = rememberLottieAnimatable()
+
+                LaunchedEffect(speed) {
+                    animatable.animate(
+                        composition,
+                        iteration = LottieConstants.IterateForever,
+                        speed = speed,
+                        initialProgress = previsousProgress,
+                    )
+                }
+                val interactionSource = remember { MutableInteractionSource() }
+
+                LottieAnimation(
+                    composition = composition,
+                    progress = { animatable.progress },
+                    modifier = Modifier
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+                            speed = if (speed == 0f) 1f else 0f
+                            previsousProgress = animatable.progress
+                        }
+                )
+            }
+
+            4 -> {
+                var previsousProgress by remember { mutableStateOf(0f) }
+                var velocity by remember { mutableStateOf(0f) }
+                var shouldPlay by remember { mutableStateOf(true) }
+                val composition by rememberLottieComposition(
+                    LottieCompositionSpec.Url(
+                        url
+                    )
+                )
+                val animatable = rememberLottieAnimatable()
+
+                //                            LaunchedEffect(composition, shouldPlay) {
+                //                                if (composition == null || !shouldPlay) return@LaunchedEffect
+                //                                animatable.animate(
+                //                                    composition,
+                //                                    iteration = LottieConstants.IterateForever,
+                //                                )
+                //                            }
+
+                LaunchedEffect(shouldPlay) {
+                    animatable.animate(
+                        composition,
+                        iteration = LottieConstants.IterateForever,
+                        speed = velocity,
+                        initialProgress = previsousProgress,
+                    )
+                }
+                val interactionSource = remember { MutableInteractionSource() }
+
+
+                LottieAnimation(
+                    composition = composition,
+                    progress = { animatable.progress },
+                    modifier = Modifier
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+                            shouldPlay = !shouldPlay
+                            velocity = if (velocity == 0f) 1f else 0f
+                            previsousProgress = animatable.progress
+                        }
+                )
+
+                Text(
+                    text = "Progresso: ${animatable.progress}",
+                    Modifier.offset(y = (-300).dp)
+                )
+            }
+
+            5 -> {
+                val anim = rememberLottieAnimatable()
+                val composition by rememberLottieComposition(
+                    LottieCompositionSpec.Url(
+                        url
+                    )
+                )
+                var speed by remember { mutableStateOf(1f) }
+                LaunchedEffect(composition, speed) {
+                    anim.animate(
+                        composition,
+                        iterations = LottieConstants.IterateForever,
+                        speed = speed,
+                        initialProgress = anim.progress,
+                    )
+                }
+                Column(
+                    Modifier.navigationBarsPadding()
+                ) {
+                    Box {
+                        LottieAnimation(composition, { anim.progress })
+                        Slider(
+                            value = speed,
+                            onValueChange = { speed = it },
+                            valueRange = -3f..3f,
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 8.dp)
+                        )
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 24.dp)
+                                .size(width = 1.dp, height = 16.dp)
+                                .background(Color.Black)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(32.dp))
+                }
+
+
             }
         }
     }

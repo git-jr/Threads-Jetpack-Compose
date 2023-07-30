@@ -38,10 +38,6 @@ fun FeedScreen(
     modifier: Modifier = Modifier,
     posts: List<Post> = emptyList(),
 ) {
-    val maxHeightImage = 200.dp
-    val defaultSizeImage = 72.dp
-    val coroutineScope = rememberCoroutineScope()
-    val animatedImageSize = remember { Animatable(defaultSizeImage.value) }
 
     LazyColumn(
         modifier = modifier
@@ -49,52 +45,7 @@ fun FeedScreen(
             .systemBarsPadding()
     ) {
         item {
-            Box(
-                modifier = Modifier
-                    .pointerInput(Unit) {
-                        detectVerticalDragGestures(
-                            onVerticalDrag = { change, offset ->
-                                coroutineScope.launch {
-                                    val newSize =
-                                        (animatedImageSize.value + offset / 8).coerceAtLeast(
-                                            defaultSizeImage.value
-                                        )
-                                    if (newSize < maxHeightImage.value) {
-                                        animatedImageSize.snapTo(newSize)
-                                    }
-                                    change.consume()
-                                }
-                            },
-                            onDragEnd = {
-                                coroutineScope.launch {
-                                    animatedImageSize.animateTo(
-                                        defaultSizeImage.value,
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioLowBouncy,
-                                            stiffness = Spring.StiffnessLow
-                                        )
-                                    )
-                                }
-                            }
-                        )
-                    }
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_logo_colors),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(animatedImageSize.value.dp)
-                            .fillMaxWidth(),
-                        colorFilter = ColorFilter.tint(color = Color.Gray)
-                    )
-                }
-            }
+            ExpandableAppLogo()
         }
 
         items(
@@ -115,6 +66,61 @@ fun FeedScreen(
 
         item {
             Spacer(modifier = Modifier.height(56.dp))
+        }
+    }
+}
+
+@Composable
+private fun ExpandableAppLogo() {
+    val maxHeightImage = 200.dp
+    val defaultSizeImage = 72.dp
+    val coroutineScope = rememberCoroutineScope()
+    val animatedImageSize = remember { Animatable(defaultSizeImage.value) }
+
+    Box(
+        modifier = Modifier
+            .pointerInput(Unit) {
+                detectVerticalDragGestures(
+                    onVerticalDrag = { change, offset ->
+                        coroutineScope.launch {
+                            val newSize =
+                                (animatedImageSize.value + offset / 8).coerceAtLeast(
+                                    defaultSizeImage.value
+                                )
+                            if (newSize < maxHeightImage.value) {
+                                animatedImageSize.snapTo(newSize)
+                            }
+                            change.consume()
+                        }
+                    },
+                    onDragEnd = {
+                        coroutineScope.launch {
+                            animatedImageSize.animateTo(
+                                defaultSizeImage.value,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioLowBouncy,
+                                    stiffness = Spring.StiffnessLow
+                                )
+                            )
+                        }
+                    }
+                )
+            }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+        ) {
+
+            Image(
+                painter = painterResource(id = R.drawable.ic_logo_colors),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(animatedImageSize.value.dp)
+                    .fillMaxWidth(),
+                colorFilter = ColorFilter.tint(color = Color.Gray)
+            )
         }
     }
 }
