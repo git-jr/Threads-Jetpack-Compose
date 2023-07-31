@@ -42,6 +42,8 @@ import kotlinx.coroutines.launch
 fun FeedScreen(
     modifier: Modifier = Modifier,
     posts: List<Post> = emptyList(),
+    onLikeClick: (Post) -> Unit = {},
+    idCurrentUserProfile: String = "",
 ) {
     LazyColumn(
         modifier = modifier
@@ -57,12 +59,13 @@ fun FeedScreen(
             key = { post -> post.id }
         ) { post ->
             val isLiked = rememberSaveable {
-                mutableStateOf(post.likes.contains(post.userAccount.id))
+                mutableStateOf(post.likes.any { it.id == idCurrentUserProfile })
             }
             PostItem(
                 post,
                 isLiked.value,
                 onLikeClick = {
+                    onLikeClick(post)
                     isLiked.value = !isLiked.value
                 }
             )

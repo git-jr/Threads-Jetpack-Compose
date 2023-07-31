@@ -5,5 +5,5 @@ import com.paradoxo.threadscompose.ui.login.AppState
 
 data class SessionState(
     var appState: AppState = AppState.Loading,
-    var userAccount: UserAccount = UserAccount(),
+    var userAccount: UserAccount = UserAccount()
 )

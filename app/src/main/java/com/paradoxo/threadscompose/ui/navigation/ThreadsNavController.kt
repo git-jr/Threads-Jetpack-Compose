@@ -20,7 +20,6 @@ import com.paradoxo.threadscompose.model.UserAccount
 import com.paradoxo.threadscompose.network.firebase.PostFirestore
 import com.paradoxo.threadscompose.sampleData.SampleData
 import com.paradoxo.threadscompose.ui.feed.FeedScreen
-import com.paradoxo.threadscompose.ui.search.SearchScreen
 import com.paradoxo.threadscompose.ui.feed.FeedViewModel
 import com.paradoxo.threadscompose.ui.home.SessionState
 import com.paradoxo.threadscompose.ui.login.LoginScreen
@@ -29,6 +28,7 @@ import com.paradoxo.threadscompose.ui.notification.NotificationsScreen
 import com.paradoxo.threadscompose.ui.post.PostScreen
 import com.paradoxo.threadscompose.ui.profile.ProfileEditScreen
 import com.paradoxo.threadscompose.ui.profile.ProfileScreen
+import com.paradoxo.threadscompose.ui.search.SearchScreen
 import com.paradoxo.threadscompose.utils.showMessage
 import kotlinx.coroutines.launch
 
@@ -114,7 +114,12 @@ internal fun NavGraphBuilder.homeGraph(
             val postViewModel: FeedViewModel = viewModel()
             val postState by postViewModel.uiState.collectAsState()
 
-            FeedScreen(posts = postState.posts)
+            FeedScreen(
+                posts = postState.posts,
+                idCurrentUserProfile = state.value.userAccount.id,
+                onLikeClick = {
+                    postViewModel.likePost(it)
+                })
         }
         composable(Destinations.Search.route) { SearchScreen() }
         composable(Destinations.Post.route) {

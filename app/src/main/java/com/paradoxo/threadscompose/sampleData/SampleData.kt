@@ -2,6 +2,7 @@ package com.paradoxo.threadscompose.sampleData
 
 import com.paradoxo.threadscompose.R
 import com.paradoxo.threadscompose.model.Comment
+import com.paradoxo.threadscompose.model.Like
 import com.paradoxo.threadscompose.model.Notification
 import com.paradoxo.threadscompose.model.NotificationTypeEnum
 import com.paradoxo.threadscompose.model.Post
@@ -15,6 +16,7 @@ class SampleData {
     val notifications = mutableListOf<Notification>()
     val posts = mutableListOf<Post>()
     val userAccounts = mutableListOf<UserAccount>()
+    private val comments = mutableListOf<Comment>()
 
     private val descriptions = listOf(
         "Viver o momento é a verdadeira essência da vida!",
@@ -40,7 +42,7 @@ class SampleData {
         "Buscando a magia em cada dia.",
         "Vivendo a vida ao máximo!"
     )
-    private val images = listOf(
+    val images = listOf(
         "https://raw.githubusercontent.com/git-jr/sample-files/7bc859dfa8a6241fa9c0d723ba6e7517bdfedd50/profile%20pics/profile_pic_emoji_1.png",
         "https://raw.githubusercontent.com/git-jr/sample-files/7bc859dfa8a6241fa9c0d723ba6e7517bdfedd50/profile%20pics/profile_pic_emoji_2.png",
         "https://raw.githubusercontent.com/git-jr/sample-files/7bc859dfa8a6241fa9c0d723ba6e7517bdfedd50/profile%20pics/profile_pic_emoji_3.png",
@@ -73,7 +75,7 @@ class SampleData {
                 description = descriptions[i - 1],
                 date = getCurrentTime(),
                 medias = if (Random.nextBoolean()) images.shuffled() else listOf(),
-                likes = generateListRandomIdStrings(),
+                likes = generateListSamplesLikes(),
                 comments = generateSampleComments()
             )
             posts.add(post)
@@ -97,6 +99,13 @@ class SampleData {
                     type = if (it in 2..4) NotificationTypeEnum.values().sortedArray()[it] else
                         NotificationTypeEnum.values().sortedArray()[Random.nextInt(0, 5)],
                     isFollowing = Random.nextBoolean(),
+                )
+            )
+
+            comments.add(
+                Comment(
+                    id = UUID.randomUUID().toString(),
+                    profilePicAuthor = images.random(),
                 )
             )
         }
@@ -126,6 +135,21 @@ class SampleData {
             )
         }
         return comments
+    }
+
+    private fun generateListSamplesLikes(): List<Like> {
+        if (Random.nextBoolean()) return emptyList()
+
+        val likes = mutableListOf<Like>()
+        repeat(Random.nextInt(0, 10)) {
+            likes.add(
+                Like(
+                    id = it.toString(),
+                    profilePicAuthor = images.random(),
+                )
+            )
+        }
+        return likes
     }
 
     fun generateSampleInvitedUser(): UserAccount {

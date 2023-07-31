@@ -1,7 +1,9 @@
 package com.paradoxo.threadscompose.ui
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,9 +28,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -43,6 +47,7 @@ import com.paradoxo.threadscompose.model.Post
 import com.paradoxo.threadscompose.sampleData.SampleData
 import com.paradoxo.threadscompose.utils.formatTimeElapsed
 import com.paradoxo.threadscompose.utils.getCurrentTime
+import com.paradoxo.threadscompose.utils.noRippleClickable
 
 @Composable
 fun PostItem(
@@ -171,13 +176,11 @@ fun PostItem(
                 Row(
                     Modifier.padding(vertical = 8.dp),
                 ) {
-                    Icon(
-                        painterResource(id = R.drawable.ic_heart),
-                        contentDescription = "like",
-                        modifier = Modifier.clickable {
-                            onLikeClick(post.id)
-                        },
-                        tint = if (isLiked) Color.Red else Color.Black
+
+                    LikeButton(
+                        isLiked = isLiked,
+                        onLikeClick = onLikeClick,
+                        postId = post.id
                     )
 
                     Spacer(modifier = Modifier.width(10.dp))
@@ -200,7 +203,7 @@ fun PostItem(
                 }
             }
         }
-        if (commentsSize > 0) {
+        if (commentsSize > 0 || likesSize > 0) {
             Row(
                 Modifier
                     .fillMaxWidth(),
@@ -214,48 +217,63 @@ fun PostItem(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-
-                    when (post.comments.size) {
-                        1 -> {
-                            ContainerOneProfilePic(
-                                post.comments.first().profilePicAuthor
-                            )
-                        }
-
-                        2 -> {
-                            val firstProfilePic = post.comments.first().profilePicAuthor
-                            val secondProfilePic = post.comments[1].profilePicAuthor
-                            if (firstProfilePic == secondProfilePic) {
-                                ContainerOneProfilePic(
-                                    firstProfilePic
-                                )
-                            } else {
-                                ContainerTwoProfilePics(
-                                    firstProfilePic,
-                                    secondProfilePic
-                                )
-                            }
-                        }
-
-                        else -> {
-                            val firstProfilePic = post.comments.first().profilePicAuthor
-                            val secondProfilePic = post.comments[1].profilePicAuthor
-                            val thirdProfilePic = post.comments[2].profilePicAuthor
-                            if (secondProfilePic == thirdProfilePic && firstProfilePic == secondProfilePic) {
-                                ContainerOneProfilePic(
-                                    post.comments.first().profilePicAuthor
-                                )
-                            } else {
-                                ContainerMoreTwoProfilePics(
-                                    firstProfilePic,
-                                    secondProfilePic,
-                                    thirdProfilePic
-                                )
+                    if (commentsSize > 0) {
+                        when (post.comments.size) {
+                            1 -> {
+                                ContainerOneProfilePic(post.comments.first().profilePicAuthor)
                             }
 
+                            2 -> {
+                                val profilePics = post.comments.take(2).map { it.profilePicAuthor }
+                                if (profilePics.distinct().size == 1) {
+                                    ContainerOneProfilePic(profilePics.first())
+                                } else {
+                                    ContainerTwoProfilePics(profilePics[0], profilePics[1])
+                                }
+                            }
+
+                            else -> {
+                                val profilePics = post.comments.take(3).map { it.profilePicAuthor }
+                                if (profilePics.distinct().size == 1) {
+                                    ContainerOneProfilePic(profilePics.first())
+                                } else {
+                                    ContainerMoreTwoProfilePics(
+                                        profilePics[0],
+                                        profilePics[1],
+                                        profilePics[2]
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        when (post.likes.size) {
+                            1 -> {
+                                ContainerOneProfilePic(post.likes.first().profilePicAuthor)
+                            }
+
+                            2 -> {
+                                val profilePics = post.likes.take(2).map { it.profilePicAuthor }
+                                if (profilePics.distinct().size == 1) {
+                                    ContainerOneProfilePic(profilePics.first())
+                                } else {
+                                    ContainerTwoProfilePics(profilePics[0], profilePics[1])
+                                }
+                            }
+
+                            else -> {
+                                val profilePics = post.likes.take(3).map { it.profilePicAuthor }
+                                if (profilePics.distinct().size == 1) {
+                                    ContainerOneProfilePic(profilePics.first())
+                                } else {
+                                    ContainerMoreTwoProfilePics(
+                                        profilePics[0],
+                                        profilePics[1],
+                                        profilePics[2]
+                                    )
+                                }
+                            }
                         }
                     }
-
                 }
                 Row(
                     Modifier
@@ -286,6 +304,7 @@ fun PostItem(
                                 color = Color.Gray.copy(alpha = 0.8f)
                             )
                         )
+                        Spacer(modifier = Modifier.width(4.dp))
                     }
                 }
             }
@@ -431,6 +450,33 @@ private fun ContainerMoreTwoProfilePics(
             )
         }
     }
+}
+
+
+@Composable
+fun LikeButton(
+    isLiked: Boolean, onLikeClick: (String) -> Unit,
+    postId: String
+) {
+    val scale: Float by animateFloatAsState(
+        targetValue = if (isLiked) 1.1f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioHighBouncy,
+            stiffness = Spring.StiffnessMedium
+        ), label = ""
+    )
+
+    val resourceId = if (isLiked) R.drawable.ic_heart else R.drawable.ic_heart_outlined
+    Icon(
+        painter = painterResource(id = resourceId),
+        contentDescription = "like",
+        modifier = Modifier
+            .noRippleClickable {
+                onLikeClick(postId)
+            }
+            .scale(scale),
+        tint = if (isLiked) Color.Red else Color.Black
+    )
 }
 
 @Preview(showBackground = true)

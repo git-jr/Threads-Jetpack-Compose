@@ -56,7 +56,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -204,7 +203,6 @@ internal fun PostScreen(
                             modifier = Modifier
                                 .clip(CircleShape)
                                 .weight(8.5f),
-
                             )
                     }
                 }
@@ -226,11 +224,10 @@ internal fun PostScreen(
                     )
                 )
 
-                val context = LocalContext.current
                 Text(
                     text = "Publicar",
                     style = MaterialTheme.typography.titleMedium.copy(
-                        fontSize = 18.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF0195F7).copy(
                             alpha = if (canAddNewPost) 1f else 0.5f
@@ -240,7 +237,7 @@ internal fun PostScreen(
                         .clickable(enabled = canAddNewPost) {
                             onSendPost(posts.map { it.toPost() })
                         }
-                        .padding(16.dp)
+                        .padding(horizontal = 8.dp, vertical = 16.dp)
                 )
             }
 
