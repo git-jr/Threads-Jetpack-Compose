@@ -43,8 +43,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,16 +62,15 @@ import com.paradoxo.threadscompose.model.Notification
 import com.paradoxo.threadscompose.model.NotificationTypeEnum
 import com.paradoxo.threadscompose.sampleData.SampleData
 import com.paradoxo.threadscompose.ui.theme.ThreadsComposeTheme
+import com.paradoxo.threadscompose.utils.noRippleClickable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NotificationsScreen(modifier: Modifier = Modifier) {
-
-    val state by remember { mutableStateOf(NotificationScreenState()) }
-    state.notifications.addAll(SampleData().notifications)
-
-    val allNotifications = state.notifications
-    val notifications = allNotifications.toMutableStateList()
+fun NotificationsScreen(
+    modifier: Modifier = Modifier,
+    allNotifications: MutableList<Notification>,
+    notifications: MutableList<Notification>
+) {
 
     val tabItems = listOf("Tudo", "Respostas", "Menções", "Verificado")
 
@@ -120,9 +119,19 @@ fun NotificationsScreen(modifier: Modifier = Modifier) {
                     modifier = modifier
                         .fillMaxSize()
                 ) {
-                    items(notifications) { notification ->
+                    items(
+                        notifications,
+                        key = { notification -> notification.id }
+                    ) { notification ->
+                        val isFollowing = rememberSaveable {
+                            mutableStateOf(notification.isFollowing)
+                        }
                         NotificationItem(
                             notification = notification,
+                            onFollowClick = {
+                                isFollowing.value = !isFollowing.value
+                            },
+                            isFollowing = isFollowing.value
                         )
                     }
                 }
@@ -200,7 +209,9 @@ private fun NotificationTabs(
 
 @Composable
 private fun NotificationItem(
-    notification: Notification
+    notification: Notification,
+    onFollowClick: (Notification) -> Unit = {},
+    isFollowing: Boolean = false,
 ) {
     val dividerColor = Color.Gray.copy(alpha = 0.2f)
     val iconSpecs = getIconByType(notification.type)
@@ -297,7 +308,7 @@ private fun NotificationItem(
                     .weight(0.3f),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                val textIsFollowing = if (notification.isFollowing) {
+                val textIsFollowing = if (isFollowing) {
                     "Seguindo"
                 } else {
                     "Seguir"
@@ -321,6 +332,9 @@ private fun NotificationItem(
                                 shape = RoundedCornerShape(10.dp)
                             )
                             .clip(RoundedCornerShape(40))
+                            .noRippleClickable {
+                                onFollowClick(notification)
+                            }
                     ) {
                         Text(
                             text = textIsFollowing,
@@ -392,7 +406,9 @@ private fun NotificationItemPreview() {
 @Composable
 fun NotificationsScreenPreview() {
     ThreadsComposeTheme {
-        NotificationsScreen()
+        NotificationsScreen(
+            allNotifications = mutableListOf(),
+            notifications = mutableListOf(),
+        )
     }
 }
-

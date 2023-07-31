@@ -2,6 +2,7 @@ package com.paradoxo.threadscompose.ui.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.facebook.Profile
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -77,5 +78,20 @@ internal class LoginViewModel : ViewModel() {
                 onError = onError
             )
         } ?: onError()
+    }
+
+    fun getCurrentUser(): UserAccount {
+        val currentUser = Firebase.auth.currentUser
+        val profile = Profile.getCurrentProfile()
+        val profilePicUri = profile?.getProfilePictureUri(200, 200)
+
+        val userAccount = UserAccount(
+            id = currentUser?.uid ?: "",
+            name = currentUser?.displayName ?: "",
+            userName = currentUser?.displayName?.lowercase()?.replace(" ", "_") ?: "",
+            imageProfileUrl = profilePicUri?.toString() ?: "",
+        )
+
+        return userAccount
     }
 }

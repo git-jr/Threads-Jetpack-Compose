@@ -5,7 +5,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -13,9 +16,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.facebook.Profile
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import com.paradoxo.threadscompose.model.UserAccount
 import com.paradoxo.threadscompose.network.firebase.PostFirestore
 import com.paradoxo.threadscompose.sampleData.SampleData
@@ -24,6 +24,7 @@ import com.paradoxo.threadscompose.ui.feed.FeedViewModel
 import com.paradoxo.threadscompose.ui.home.SessionState
 import com.paradoxo.threadscompose.ui.login.LoginScreen
 import com.paradoxo.threadscompose.ui.login.LoginViewModel
+import com.paradoxo.threadscompose.ui.notification.NotificationScreenState
 import com.paradoxo.threadscompose.ui.notification.NotificationsScreen
 import com.paradoxo.threadscompose.ui.post.PostScreen
 import com.paradoxo.threadscompose.ui.profile.ProfileEditScreen
@@ -70,20 +71,8 @@ internal fun NavGraphBuilder.loginGraph(
             val loginViewModel: LoginViewModel = viewModel()
             val context = LocalContext.current
 
-            val currentUser = Firebase.auth.currentUser
-
-            val profile = Profile.getCurrentProfile()
-            val profilePicUri = profile?.getProfilePictureUri(200, 200)
-
-            val userAccount = UserAccount(
-                id = currentUser?.uid ?: "",
-                name = currentUser?.displayName ?: "",
-                userName = currentUser?.displayName?.lowercase()?.replace(" ", "_") ?: "",
-                imageProfileUrl = profilePicUri?.toString() ?: "",
-            )
-
             ProfileEditScreen(
-                userAccount = userAccount,
+                userAccount = loginViewModel.getCurrentUser(),
                 onSave = { userAccountUpdated ->
                     loginViewModel.saveNewUser(
                         userAccount = userAccountUpdated,
@@ -151,10 +140,26 @@ internal fun NavGraphBuilder.homeGraph(
                 }
             )
         }
-        composable(Destinations.Notifications.route) { NotificationsScreen() }
+        composable(Destinations.Notifications.route) {
+            val notificationState by remember { mutableStateOf(NotificationScreenState()) }
+            notificationState.notifications.addAll(SampleData().notifications)
+
+            val allNotifications = notificationState.notifications
+            val notifications = allNotifications.toMutableStateList()
+
+            NotificationsScreen(
+                allNotifications = allNotifications,
+                notifications = notifications
+            )
+        }
         composable(Destinations.Profile.route) {
+
+            val postLists = remember { SampleData().posts }.toMutableStateList()
+
             ProfileScreen(
                 currentUser = state.value.userAccount,
+                postLists = postLists,
+                repliesList = postLists.shuffled().toMutableList(),
                 modifier = Modifier.padding(paddingValues),
                 onNavigateToInstagram = {
                     onNavigateToInstagram()

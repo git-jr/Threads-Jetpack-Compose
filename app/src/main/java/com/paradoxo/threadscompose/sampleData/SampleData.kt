@@ -50,6 +50,29 @@ class SampleData {
         "https://raw.githubusercontent.com/git-jr/sample-files/7bc859dfa8a6241fa9c0d723ba6e7517bdfedd50/profile%20pics/profile_pic_emoji_5.png",
     )
 
+    val names = listOf(
+        "Sheldon Cooper",
+        "Eleanor Shellstrop",
+        "Sherlock Holmes",
+        "John Watson",
+        "Walter White",
+        "Jesse Pinkman",
+        "Daenerys Targaryen",
+        "Jon Snow",
+        "Michael Scott",
+        "Chrisjen Avasarala",
+        "Tyrion Lannister",
+        "Arya Stark",
+        "Tommy Shelby",
+        "Gol D. Roger",
+        "Jake Peralta",
+        "Amy Santiago",
+        "Chloe Morningstar",
+        "Barry allen",
+        "David Mailer",
+        "Elizabeth Keen"
+    )
+
     init {
         val randomNumbers = mutableListOf<Long>()
         repeat(1000) {
@@ -59,7 +82,7 @@ class SampleData {
         for (i in 1..10) {
             val userAccount = UserAccount(
                 id = i.toString(),
-                name = "Nome $i",
+                name = names[Random.nextInt(0, names.size)],
                 userName = "usuario$i",
                 bio = bios[i - 1],
                 imageProfileUrl = images.random(),
@@ -153,10 +176,11 @@ class SampleData {
     }
 
     fun generateSampleInvitedUser(): UserAccount {
+        val name = names[Random.nextInt(0, names.size)]
         return UserAccount(
             id = UUID.randomUUID().toString(),
-            name = "Nome da pessoa convidada",
-            userName = "convidada_42",
+            name = name,
+            userName = name.replace(" ", "").lowercase(),
             bio = "O tal do Lorem ipsum dolor sit amet, consectetur adipiscing elit",
             link = "https://github.com/git-jr",
             imageProfileUrl = images.random(),

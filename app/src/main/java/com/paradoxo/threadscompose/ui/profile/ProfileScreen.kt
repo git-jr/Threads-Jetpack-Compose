@@ -34,7 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.paradoxo.threadscompose.R
+import com.paradoxo.threadscompose.model.Post
 import com.paradoxo.threadscompose.model.UserAccount
 import com.paradoxo.threadscompose.sampleData.SampleData
 import com.paradoxo.threadscompose.ui.PostItem
@@ -63,7 +64,9 @@ import com.paradoxo.threadscompose.ui.PostItem
 fun ProfileScreen(
     modifier: Modifier = Modifier,
     onNavigateToInstagram: () -> Unit = { },
-    currentUser: UserAccount
+    currentUser: UserAccount,
+    postLists: MutableList<Post> = mutableListOf(),
+    repliesList: MutableList<Post> = mutableListOf()
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -112,10 +115,7 @@ fun ProfileScreen(
         },
     ) { paddingValues ->
 
-        val postLists = SampleData().posts
-        val repliesList = SampleData().posts.shuffled()
-
-        var tabState by remember { mutableStateOf(0) }
+        var tabState by remember { mutableIntStateOf(0) }
         val titles = listOf("Threads", "Respostas")
         LazyColumn(
             modifier = Modifier
@@ -389,6 +389,7 @@ fun ProfileScreen(
 @Composable
 fun ProfileScreenPreview() {
     ProfileScreen(
-        currentUser = SampleData().generateSampleInvitedUser()
+        currentUser = SampleData().generateSampleInvitedUser(),
+        postLists = SampleData().posts
     )
 }
