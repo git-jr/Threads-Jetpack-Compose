@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,6 +27,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -45,6 +47,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
@@ -67,7 +70,10 @@ import com.paradoxo.threadscompose.R
 import com.paradoxo.threadscompose.model.Post
 import com.paradoxo.threadscompose.model.UserAccount
 import com.paradoxo.threadscompose.sampleData.SampleData
+import com.paradoxo.threadscompose.utils.getCurrentTime
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun PostScreen(
     modifier: Modifier = Modifier,
@@ -79,7 +85,7 @@ internal fun PostScreen(
         PostScreenState(
             currentUser,
             content = "",
-            date = "",
+            date = getCurrentTime().toString(),
             medias = mutableListOf(),
             isFirstPost = true
         )
@@ -121,43 +127,57 @@ internal fun PostScreen(
                 }
             }
 
+            val state = rememberLazyListState()
+
+            val scope = rememberCoroutineScope()
+
             LazyColumn(
+                state = state,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
             ) {
-                items(posts) { post ->
-                    EditPostItem(
-                        postState = post,
-                        onAddNew = {
-                            posts.add(
-                                PostScreenState(
-                                    userAccount = currentUser,
-                                    content = "",
-                                    date = ""
+                items(posts, key = { it.date }) { post ->
+                    Box(
+                        modifier = Modifier.animateItemPlacement()
+                    ) {
+                        EditPostItem(
+                            postState = post,
+                            onAddNew = {
+                                posts.add(
+                                    PostScreenState(
+                                        userAccount = currentUser,
+                                        content = "",
+                                        date = getCurrentTime().toString()
+                                    )
                                 )
-                            )
-                        },
-                        onRemovePost = {
-                            posts.remove(post)
-                        },
-                        onCanAddNew = {
-                            canAddNewPost = it
-                        },
-                        onSelectMedia = {
-                            pickMedia.launch(
-                                PickVisualMediaRequest(
-                                    ActivityResultContracts.PickVisualMedia.ImageOnly
+                                scope.launch {
+                                    state.animateScrollToItem(posts.lastIndex)
+                                }
+
+                            },
+                            onRemovePost = {
+                                posts.remove(post)
+                            },
+                            onCanAddNew = {
+                                canAddNewPost = it
+                            },
+                            onSelectMedia = {
+                                pickMedia.launch(
+                                    PickVisualMediaRequest(
+                                        ActivityResultContracts.PickVisualMedia.ImageOnly
+                                    )
                                 )
-                            )
-                        },
-                        onRemoveMedia = { mediaUri, postaState ->
-                            val indexPost = posts.indexOf(postaState)
-                            posts[indexPost] = postaState.copy(
-                                medias = postaState.medias.filter { it != mediaUri }.toMutableList()
-                            )
-                        }
-                    )
+                            },
+                            onRemoveMedia = { mediaUri, postaState ->
+                                val indexPost = posts.indexOf(postaState)
+                                posts[indexPost] = postaState.copy(
+                                    medias = postaState.medias.filter { it != mediaUri }
+                                        .toMutableList()
+                                )
+                            }
+                        )
+                    }
                 }
 
                 item {
@@ -173,9 +193,13 @@ internal fun PostScreen(
                                         PostScreenState(
                                             userAccount = currentUser,
                                             content = "",
-                                            date = ""
+                                            date = getCurrentTime().toString(),
                                         )
                                     )
+
+                                    scope.launch {
+                                        state.animateScrollToItem(posts.lastIndex)
+                                    }
                                 }
                             },
                         verticalAlignment = Alignment.CenterVertically
@@ -203,7 +227,7 @@ internal fun PostScreen(
                             modifier = Modifier
                                 .clip(CircleShape)
                                 .weight(8.5f),
-                            )
+                        )
                     }
                 }
             }
