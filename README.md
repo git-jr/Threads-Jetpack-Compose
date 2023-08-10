@@ -1,6 +1,6 @@
 ![banner_lines_github](https://github.com/git-jr/Threads-Jetpack-Compose/assets/35709152/7c6b3484-e87a-4f20-ad93-14239a88927c)
 
-**Lines** é um aplicativo desenvolvido com propósito de se parecer ao máximo com o app [**Threads**][threads-net] da [Meta][meta], feito em Jetpack Composse assim como o original esse projeto também teve o objetivo de ser feito no menor tempo possível, em breve o [resultdo saí aqui](https://www.youtube.com/@JrObom/videos)
+**Lines** é um aplicativo desenvolvido com propósito de se parecer ao máximo com o app [**Threads**][threads-net] da [Meta][meta], feito em Jetpack Composse assim como o original esse projeto também teve o objetivo de ser feito no menor tempo possível, em breve o [resultdo saí aqui][video-recriando-threads]
 
 💻 As seguintes tecnologias estão em uso no momento:
 - [Jetpack Compose][compose] - Interface de usuário
@@ -36,12 +36,12 @@ https://github.com/git-jr/Threads-Jetpack-Compose/assets/35709152/61c577a5-5b91-
 
 
 ## 📲 Testar o app
-Aviso: A versão atual deste projeto foi desenvolvida com o objetivo de criar, no menor tempo possível, a versão mais próxima do Threads. Você pode conferir o resultado desse desafio em breve [neste vídeo][video-desafio], então ainda tem muita coisa pra ajustar 😉
+Aviso: A versão atual deste projeto foi desenvolvida com o objetivo de criar, no menor tempo possível, a versão mais próxima do Threads. Você pode conferir o resultado desse desafio em breve [neste vídeo][video-recriando-threads], então ainda tem muita coisa pra ajustar 😉
 
 Vá até [Releases][releases], baixe o arquivo APK da última versão disponível e escolha a forma login:
-> Com Facebook: Talvez apareça uma mensagem de "Permissões ainda não verificadas pelo Facebook", mas é porque o app ainda não foi revisado pela equipe do Facebook; pode prosseguir com segurança.
+> Como convidado: Não precisa digitar nenhuma credencial, seu perfil dentro do app será gerado aleatoriamente com dados de teste, os posts de outros usuários não serão exibidos.
 
-> Como convidado: Não precisa digitar nenhuma credencial, e seu perfil dentro do app será gerado aleatoriamente com dados de teste.
+> Com o Facebook: Você verá posts de outros usuários reais do app. Uma mensagem de "Permissões ainda não verificadas pelo Facebook" pode aparecer no início, mas não se preocupe. Este é um alerta padrão, pois o app ainda não foi revisado pela equipe do Facebook ainda. Você pode prosseguir com segurança.
 
 
 
@@ -63,7 +63,6 @@ Esse projeto precisa de 2 arquivos principais para ser compilado corremente no A
 ## 😎 Gostou do app?
 Clica ali na estrela ⭐ do topo para dar aquela força!
 
-[video-desafio]: https://www.youtube.com/watch?v=wmlcasdadMkj2H70
 [compose]: https://developer.android.com/jetpack/compose
 [threads-net]: https://www.threads.net/
 [meta]: https://about.meta.com/
@@ -81,3 +80,5 @@ Clica ali na estrela ⭐ do topo para dar aquela força!
 
 [tutorial-firebase]: https://firebase.google.com/docs/android/setup?hl=pt-br#create-firebase-project
 [tutorial-facebook-login-api]: https://developers.facebook.com/docs/facebook-login/android
+
+[video-recriando-threads]: https://youtu.be/Kr4Kn0ewnIw
