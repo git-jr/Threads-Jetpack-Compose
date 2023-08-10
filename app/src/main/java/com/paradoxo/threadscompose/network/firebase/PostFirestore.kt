@@ -43,20 +43,24 @@ class PostFirestore {
         if (posts.size > 1) {
             savePostThread(posts, onSuccess, onError)
         } else {
-            val post = posts.first().copy(
-                id = UUID.randomUUID().toString(),
-                mainPost = true
-            )
-            dbPosts.document()
-                .set(post)
-                .addOnSuccessListener {
-                    onSuccess()
-                    Log.i("savePost", "Post salvo com sucesso")
-                }
-                .addOnFailureListener {
-                    onError()
-                    Log.i("savePost", "Erro ao salvar post ${it.message}")
-                }
+
+            CoroutineScope(IO).launch {
+                val post = posts.first().copy(
+                    id = UUID.randomUUID().toString(),
+                    mainPost = true,
+                    medias = mediaFirebaseStorage.uploadMedia(posts.first().medias)
+                )
+                dbPosts.document()
+                    .set(post)
+                    .addOnSuccessListener {
+                        onSuccess()
+                        Log.i("savePost", "Post salvo com sucesso")
+                    }
+                    .addOnFailureListener {
+                        onError()
+                        Log.i("savePost", "Erro ao salvar post ${it.message}")
+                    }
+            }
         }
     }
 

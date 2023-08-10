@@ -59,6 +59,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -71,6 +72,7 @@ import com.paradoxo.threadscompose.model.Post
 import com.paradoxo.threadscompose.model.UserAccount
 import com.paradoxo.threadscompose.sampleData.SampleData
 import com.paradoxo.threadscompose.utils.getCurrentTime
+import com.paradoxo.threadscompose.utils.noRippleClickable
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -81,6 +83,8 @@ internal fun PostScreen(
     onSendPost: (List<Post>) -> Unit = {},
     onBack: () -> Unit = {}
 ) {
+    val focusRequester = remember { FocusRequester() }
+
     val posts = mutableListOf(
         PostScreenState(
             currentUser,
@@ -113,6 +117,7 @@ internal fun PostScreen(
     ) { paddingValues ->
         Column(
             modifier = Modifier
+                .focusRequester(focusRequester = focusRequester)
                 .padding(
                     paddingValues = PaddingValues(
                         top = paddingValues.calculateTopPadding(),
@@ -431,10 +436,6 @@ private fun EditPostItem(
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.surfaceVariant)
             )
 
-            LaunchedEffect(Unit) {
-                focusRequester.requestFocus()
-            }
-
 
             val size = if (postState.medias.size > 0) 200.dp else 24.dp
 
@@ -454,6 +455,7 @@ private fun EditPostItem(
                         Box {
                             AsyncImage(
                                 model = imageUri,
+                                contentScale = ContentScale.Crop,
                                 placeholder = painterResource(id = R.drawable.placeholder_image),
                                 error = painterResource(id = R.drawable.placeholder_image),
                                 contentDescription = "image",
@@ -477,7 +479,7 @@ private fun EditPostItem(
                                         Color.Black.copy(alpha = 0.5f)
                                     )
                                     .align(Alignment.TopEnd)
-                                    .clickable {
+                                    .noRippleClickable {
                                         onRemoveMedia(imageUri, postState)
                                     },
                             ) {
@@ -505,7 +507,7 @@ private fun EditPostItem(
                         modifier = Modifier
                             .size(24.dp)
                             .rotate(45f)
-                            .clickable {
+                            .noRippleClickable {
                                 onSelectMedia(postState)
                             }
 

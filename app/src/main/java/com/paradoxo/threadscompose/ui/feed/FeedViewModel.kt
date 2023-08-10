@@ -16,17 +16,11 @@ internal class FeedViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(FeedScreenState())
     val uiState: StateFlow<FeedScreenState> = _uiState.asStateFlow()
+    private val postFirestore = PostFirestore()
 
     init {
-        val postFirestore = PostFirestore()
-        postFirestore.getAllPosts(
-            onSuccess = { posts ->
-                _uiState.value = _uiState.value.copy(posts = posts)
-            },
-            onError = {
-                _uiState.value = _uiState.value.copy(posts = SampleData().posts)
-            }
-        )
+//        val postFirestore = PostFirestore()
+        searchNewPosts()
 
         _uiState.value = _uiState.value.copy(
             currentUserProfile = UserAccount(
@@ -34,6 +28,22 @@ internal class FeedViewModel : ViewModel() {
                 userName = Firebase.auth.currentUser?.displayName ?: "",
                 imageProfileUrl = Firebase.auth.currentUser?.photoUrl.toString()
             )
+        )
+    }
+
+    fun searchNewPosts() {
+        if (Firebase.auth.currentUser == null) {
+            _uiState.value = _uiState.value.copy(posts = SampleData().posts)
+            return
+        }
+
+        postFirestore.getAllPosts(
+            onSuccess = { posts ->
+                _uiState.value = _uiState.value.copy(posts = posts)
+            },
+            onError = {
+                _uiState.value = _uiState.value.copy(posts = SampleData().posts)
+            }
         )
     }
 

@@ -45,6 +45,7 @@ fun FeedScreen(
     modifier: Modifier = Modifier,
     posts: List<Post> = emptyList(),
     onLikeClick: (Post) -> Unit = {},
+    onReload: () -> Unit = {},
     idCurrentUserProfile: String = "",
 ) {
     LazyColumn(
@@ -54,7 +55,7 @@ fun FeedScreen(
             .systemBarsPadding()
     ) {
         item {
-            ExpandableAppLogoLottie()
+            ExpandableAppLogoLottie(onReload = onReload)
         }
 
         items(
@@ -81,7 +82,7 @@ fun FeedScreen(
 }
 
 @Composable
-private fun ExpandableAppLogoLottie() {
+private fun ExpandableAppLogoLottie(onReload: () -> Unit = {}) {
     val maxHeightImage = 200.dp
     val defaultSizeImage = 72.dp
     val coroutineScope = rememberCoroutineScope()
@@ -140,6 +141,8 @@ private fun ExpandableAppLogoLottie() {
                                 initialProgress = lottiePreviousProgress,
                             )
                         }
+
+                        onReload()
                     },
                     onDragStart = {
                         coroutineScope.launch {

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -146,8 +147,12 @@ fun PostItem(
                                 .fillMaxWidth()
                         ) {
                             items(post.medias) { media ->
-                                Row {
+                                Row(
+                                    Modifier
+                                        .defaultMinSize(minHeight = 200.dp)
+                                ) {
                                     AsyncImage(
+                                        contentScale = ContentScale.Crop,
                                         model = ImageRequest.Builder(LocalContext.current)
                                             .data(media)
                                             .crossfade(true)
@@ -155,8 +160,8 @@ fun PostItem(
                                         placeholder = painterResource(id = R.drawable.placeholder_image),
                                         error = painterResource(id = R.drawable.placeholder_image),
                                         contentDescription = "avatar",
-                                        contentScale = ContentScale.Crop,
                                         modifier = Modifier
+                                            .fillMaxHeight()
                                             .padding(vertical = 8.dp)
                                             .clip(RoundedCornerShape(10))
                                             .border(

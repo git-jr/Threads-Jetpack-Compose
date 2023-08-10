@@ -16,6 +16,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.paradoxo.threadscompose.model.UserAccount
 import com.paradoxo.threadscompose.network.firebase.PostFirestore
 import com.paradoxo.threadscompose.sampleData.SampleData
@@ -108,7 +110,11 @@ internal fun NavGraphBuilder.homeGraph(
                 idCurrentUserProfile = state.value.userAccount.id,
                 onLikeClick = {
                     postViewModel.likePost(it)
-                })
+                },
+                onReload = {
+                    postViewModel.searchNewPosts()
+                }
+            )
         }
         composable(Destinations.Search.route) { SearchScreen() }
         composable(Destinations.Post.route) {
@@ -122,6 +128,10 @@ internal fun NavGraphBuilder.homeGraph(
                     onBack()
                 },
                 onSendPost = { posts ->
+                    if (Firebase.auth.currentUser == null) {
+                        context.showMessage("Você precisa estar logado para publicar")
+                        return@PostScreen
+                    }
                     context.showMessage("Publicando")
                     val postFirestore = PostFirestore()
                     scope.launch {

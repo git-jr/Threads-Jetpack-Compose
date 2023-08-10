@@ -388,7 +388,7 @@ private fun AccountItem(account: UserAccount) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = Color.White,
+                        color = Color.Transparent,
                         shape = RoundedCornerShape(10.dp)
                     )
                     .border(
