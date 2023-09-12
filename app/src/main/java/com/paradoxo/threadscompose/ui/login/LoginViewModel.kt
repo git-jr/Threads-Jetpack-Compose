@@ -83,13 +83,16 @@ internal class LoginViewModel : ViewModel() {
     fun getCurrentUser(): UserAccount {
         val currentUser = Firebase.auth.currentUser
         val profile = Profile.getCurrentProfile()
-        val profilePicUri = profile?.getProfilePictureUri(200, 200)
+        val profileFacebookPicUri = profile?.getProfilePictureUri(200, 200).toString()
+
+        val photoUrl = currentUser?.photoUrl.toString().replace("=s96", "=s200")
+        val profileImage = profileFacebookPicUri.ifEmpty { photoUrl }
 
         val userAccount = UserAccount(
             id = currentUser?.uid ?: "",
             name = currentUser?.displayName ?: "",
             userName = currentUser?.displayName?.lowercase()?.replace(" ", "_") ?: "",
-            imageProfileUrl = profilePicUri?.toString() ?: "",
+            imageProfileUrl = profileImage
         )
 
         return userAccount

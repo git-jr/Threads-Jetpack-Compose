@@ -2,13 +2,16 @@ package com.paradoxo.threadscompose.ui.login
 
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,17 +31,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.facebook.CallbackManager
 import com.facebook.FacebookCallback
 import com.facebook.FacebookException
 import com.facebook.Profile
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FacebookAuthProvider
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.paradoxo.threadscompose.R
@@ -106,12 +116,41 @@ fun LoggedOutScreen(
     val loginManager = LoginManager.getInstance()
     val callbackManager = remember { CallbackManager.Factory.create() }
 
-    val launcher = rememberLauncherForActivityResult(
+    val context = LocalContext.current
+
+    val facebookAuthLauncher = rememberLauncherForActivityResult(
         contract = loginManager.createLogInActivityResultContract(callbackManager, null),
         onResult = {
             // The result are handled by the callbackManager
         }
     )
+
+    val googleAuthLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+        onResult = {
+            val data = it.data
+            val account = GoogleSignIn.getSignedInAccountFromIntent(data).result
+            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+
+            Firebase.auth.signInWithCredential(credential).addOnCompleteListener {
+                if (it.isSuccessful) {
+                    onAuthComplete(account?.displayName)
+
+                } else {
+                    Log.e("googleAuth", "Erro ao logar com o Google", it.exception)
+                    onAuthError()
+                }
+            }
+        }
+    )
+
+    val gso =
+        GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(stringResource(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+
+    val client = GoogleSignIn.getClient(context, gso)
 
     DisposableEffect(Unit) {
         loginManager.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
@@ -162,11 +201,10 @@ fun LoggedOutScreen(
             Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-
             Row(
                 modifier = Modifier
                     .noRippleClickable {
-                        launcher.launch(listOf("email", "public_profile"))
+                        facebookAuthLauncher.launch(listOf("email", "public_profile"))
                     }
                     .fillMaxWidth()
                     .background(
@@ -202,6 +240,40 @@ fun LoggedOutScreen(
                         .padding(16.dp)
                         .size(50.dp)
                 )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .background(Color(66, 133, 244, 255), shape = RoundedCornerShape(8.dp))
+                    .padding(8.dp)
+                    .noRippleClickable {
+                        googleAuthLauncher.launch(client.signInIntent)
+                    }
+            ) {
+                Box(
+                    Modifier.fillMaxHeight(),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    AsyncImage(
+                        model = "https://lh3.googleusercontent.com/COxitqgJr1sJnIDe8-jiKhxDx1FrYbtRHKJ9z_hELisAlapwE9LUPh6fcXIfb5vwpbMl4xl9H9TRFPc5NOO8Sb3VSgIBrfRYvW6cUA",
+                        contentDescription = "Logo do Google",
+                        modifier = Modifier
+                            .background(Color.White, shape = RoundedCornerShape(4.dp))
+                            .padding(8.dp)
+                    )
+                    Text(
+                        text = "Entrar com o Google",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))

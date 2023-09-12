@@ -20,6 +20,7 @@ firebase-bom = "32.2.0"
 firebase-firestore-ktx = "24.7.0"
 firebase-storage-ktx = "20.2.1"
 lottie-compose = "6.1.0"
+play-services-auth = "20.7.0"
 
 
 [libraries]
@@ -28,6 +29,8 @@ coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil-compose
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 facebook-android-sdk = { module = "com.facebook.android:facebook-android-sdk", version.ref = "facebook-android-sdk" }
 google-services = { module = "com.google.gms:google-services", version.ref = "google-services" }
+
+
 lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottie-compose" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation-compose" }
 lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "viewmodel-compose" }
@@ -49,6 +52,7 @@ material3 = { group = "androidx.compose.material3", name = "material3" }
 firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebase-auth-ktx" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebase-firestore-ktx" }
 firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebase-storage-ktx" }
+play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "play-services-auth" }
 
 
 

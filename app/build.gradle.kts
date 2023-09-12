@@ -89,6 +89,7 @@ dependencies {
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.navigation.compose)
     implementation(libs.firebase.firestore.ktx)
+    implementation(libs.play.services.auth)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 

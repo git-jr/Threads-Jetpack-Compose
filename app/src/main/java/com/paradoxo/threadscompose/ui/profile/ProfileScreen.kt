@@ -51,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
@@ -229,8 +230,8 @@ fun ProfileScreen(
                                     contentDescription = "Profile",
                                     modifier = Modifier
                                         .clickable { visible = !visible }
-                                        .fillMaxWidth()
-                                        .clip(CircleShape)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.Fit
                                 )
                             }
                         }
